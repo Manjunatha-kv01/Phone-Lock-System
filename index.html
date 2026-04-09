@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phone Lock System Simulation — Complete Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c10;
+  --bg2: #0f1218;
+  --bg3: #141820;
+  --surface: #1a1f2e;
+  --border: #1e2535;
+  --border2: #262d40;
+  --green: #00ff88;
+  --green2: #00cc6a;
+  --green3: #004d28;
+  --amber: #f59e0b;
+  --amber2: #fbbf24;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --blue2: #60a5fa;
+  --purple: #8b5cf6;
+  --cyan: #06b6d4;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Syne', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, #0a0c10 0%, #0d1220 50%, #0a1018 100%);
+  border-bottom: 1px solid var(--border2);
+  padding: 56px 40px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: -60px; right: -60px;
+  height: 200px;
+  background: radial-gradient(ellipse 700px 120px at 50% 0%, rgba(0,255,136,0.06), transparent);
+  pointer-events: none;
+}
+.hero-grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.hero-inner { max-width: 1100px; margin: 0 auto; position: relative; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2);
+  color: var(--green); font-size: 11px; font-weight: 500; letter-spacing: 0.12em;
+  padding: 5px 14px; border-radius: 100px; margin-bottom: 24px;
+  text-transform: uppercase;
+}
+.badge-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: blink 1.8s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.hero h1 {
+  font-family: var(--sans); font-size: clamp(28px, 4vw, 48px); font-weight: 800;
+  line-height: 1.15; letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+.hero h1 span { -webkit-text-fill-color: var(--green); }
+.hero-sub { color: var(--text2); font-size: 14px; max-width: 680px; line-height: 1.8; margin-bottom: 32px; }
+.hero-meta { display: flex; gap: 24px; flex-wrap: wrap; }
+.hero-stat { display: flex; align-items: center; gap: 8px; color: var(--text3); font-size: 12px; }
+.hero-stat span { color: var(--text2); }
+
+/* NAV */
+.nav-wrap {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,12,16,0.95); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border2);
+}
+.nav { max-width: 1100px; margin: 0 auto; display: flex; gap: 2px; padding: 0 40px; overflow-x: auto; }
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn {
+  background: none; border: none; color: var(--text3); font-family: var(--mono); font-size: 12px;
+  padding: 14px 18px; cursor: pointer; transition: color .2s; white-space: nowrap;
+  border-bottom: 2px solid transparent; letter-spacing: 0.05em;
+}
+.nav-btn:hover { color: var(--text2); }
+.nav-btn.active { color: var(--green); border-bottom-color: var(--green); }
+
+/* MAIN */
+.main { max-width: 1100px; margin: 0 auto; padding: 40px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* SECTION HEADER */
+.sec-header { margin-bottom: 36px; }
+.sec-tag { font-size: 11px; color: var(--green); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; }
+.sec-title { font-family: var(--sans); font-size: 28px; font-weight: 700; color: #fff; line-height: 1.2; }
+.sec-desc { color: var(--text2); margin-top: 10px; font-size: 14px; max-width: 680px; }
+
+/* CARDS */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px; margin-bottom: 20px;
+}
+.card-title {
+  font-family: var(--sans); font-size: 16px; font-weight: 700;
+  color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+}
+.card-title .icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.icon-green { background: rgba(0,255,136,0.12); color: var(--green); }
+.icon-amber { background: rgba(245,158,11,0.12); color: var(--amber); }
+.icon-blue { background: rgba(59,130,246,0.12); color: var(--blue2); }
+.icon-red { background: rgba(239,68,68,0.12); color: var(--red); }
+.icon-purple { background: rgba(139,92,246,0.12); color: var(--purple); }
+.icon-cyan { background: rgba(6,182,212,0.12); color: var(--cyan); }
+
+/* CODE BLOCKS */
+pre {
+  background: #090b0f; border: 1px solid var(--border2);
+  border-radius: 8px; padding: 20px; overflow-x: auto;
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.7;
+  margin: 12px 0; position: relative;
+}
+.code-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #0f1218; border: 1px solid var(--border2); border-bottom: none;
+  border-radius: 8px 8px 0 0; padding: 8px 16px; font-size: 11px; color: var(--text3);
+}
+.code-header + pre { border-radius: 0 0 8px 8px; margin-top: 0; }
+.code-dots { display: flex; gap: 6px; }
+.code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+.kw { color: #7c86ff; }
+.fn { color: #60a5fa; }
+.str { color: #86efac; }
+.cm { color: #4a5568; font-style: italic; }
+.tp { color: #f59e0b; }
+.nm { color: #c084fc; }
+.op { color: #94a3b8; }
+
+/* LEVEL TABS */
+.level-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+.level-tab {
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--text3); font-family: var(--mono); font-size: 12px;
+  padding: 8px 20px; border-radius: 8px; cursor: pointer; transition: all .2s;
+}
+.level-tab:hover { border-color: var(--border); color: var(--text2); }
+.level-tab.active-tab { background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.3); color: var(--green); }
+.level-content { display: none; }
+.level-content.active-level { display: block; }
+
+/* GRID */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width: 760px) { .grid2,.grid3 { grid-template-columns: 1fr; } }
+
+/* BADGE */
+.badge {
+  display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  padding: 3px 10px; border-radius: 100px; text-transform: uppercase;
+}
+.badge-green { background: rgba(0,255,136,0.1); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
+.badge-amber { background: rgba(245,158,11,0.1); color: var(--amber2); border: 1px solid rgba(245,158,11,0.2); }
+.badge-red { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+.badge-blue { background: rgba(59,130,246,0.1); color: var(--blue2); border: 1px solid rgba(59,130,246,0.2); }
+.badge-purple { background: rgba(139,92,246,0.1); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.2); }
+
+/* LIST */
+ul.checklist { list-style: none; }
+ul.checklist li { display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; color: var(--text2); font-size: 13px; }
+ul.checklist li::before { content: '→'; color: var(--green); flex-shrink: 0; margin-top: 1px; }
+
+/* FLOW DIAGRAM */
+.flow {
+  display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+  background: #090b0f; border: 1px solid var(--border2); border-radius: 10px;
+  padding: 20px; margin: 16px 0; overflow-x: auto;
+}
+.flow-node {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 10px 16px; font-size: 12px; color: var(--text2);
+  white-space: nowrap; flex-shrink: 0; text-align: center; min-width: 90px;
+}
+.flow-node.green { border-color: rgba(0,255,136,0.3); color: var(--green); }
+.flow-node.amber { border-color: rgba(245,158,11,0.3); color: var(--amber2); }
+.flow-node.red { border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+.flow-node.blue { border-color: rgba(59,130,246,0.3); color: var(--blue2); }
+.flow-node.purple { border-color: rgba(139,92,246,0.3); color: #c4b5fd; }
+.flow-arr { color: var(--text3); padding: 0 8px; font-size: 16px; flex-shrink: 0; }
+.flow-label { font-size: 10px; color: var(--text3); text-align: center; margin-top: 4px; }
+
+/* ARCH DIAGRAM */
+.arch { background: #090b0f; border: 1px solid var(--border2); border-radius: 12px; padding: 24px; }
+.arch-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 8px 0; flex-wrap: wrap; }
+.arch-box {
+  border: 1px solid; border-radius: 8px; padding: 10px 18px;
+  font-size: 12px; text-align: center; min-width: 120px;
+}
+.arch-sep { width: 100%; border-top: 1px dashed var(--border2); margin: 12px 0; display: flex; align-items: center; gap: 8px; }
+.arch-sep span { color: var(--text3); font-size: 10px; letter-spacing: 0.1em; white-space: nowrap; }
+.arch-sep::before, .arch-sep::after { content: ''; flex: 1; border-top: 1px dashed var(--border2); }
+
+/* PHONE SIMULATOR */
+.phone-wrap { display: flex; justify-content: center; padding: 20px 0; }
+.phone {
+  width: 240px; background: #141820; border: 2px solid var(--border2);
+  border-radius: 36px; padding: 20px 16px; box-shadow: 0 0 60px rgba(0,255,136,0.06);
+  position: relative; overflow: hidden;
+}
+.phone-notch {
+  width: 80px; height: 20px; background: #0a0c10;
+  border-radius: 0 0 14px 14px; margin: 0 auto 16px;
+}
+.phone-screen { background: #0a0c10; border-radius: 20px; padding: 20px 16px 16px; min-height: 340px; }
+.phone-time { text-align: center; color: #fff; font-family: var(--sans); font-size: 36px; font-weight: 700; margin-bottom: 4px; }
+.phone-date { text-align: center; color: var(--text3); font-size: 11px; margin-bottom: 24px; }
+.pin-display { display: flex; justify-content: center; gap: 12px; margin-bottom: 24px; }
+.pin-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: transparent; border: 2px solid var(--text3);
+  transition: all .2s;
+}
+.pin-dot.filled { background: var(--green); border-color: var(--green); box-shadow: 0 0 8px rgba(0,255,136,0.5); }
+.pin-dot.error { background: var(--red); border-color: var(--red); box-shadow: 0 0 8px rgba(239,68,68,0.5); }
+.pin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.pin-key {
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border2);
+  border-radius: 10px; height: 46px; color: #fff;
+  font-family: var(--sans); font-size: 18px; font-weight: 600;
+  cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center;
+}
+.pin-key:hover { background: rgba(255,255,255,0.1); }
+.pin-key:active { transform: scale(0.94); }
+.pin-key.del { font-size: 14px; color: var(--text3); }
+.pin-status { text-align: center; font-size: 12px; color: var(--text3); margin-bottom: 10px; min-height: 18px; }
+.pin-status.ok { color: var(--green); }
+.pin-status.err { color: var(--red); }
+.pin-status.warn { color: var(--amber2); }
+.attempts-bar { display: flex; gap: 4px; justify-content: center; margin-top: 8px; }
+.att-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); transition: all .3s; }
+.att-dot.used { background: var(--red); }
+.phone-bottom { height: 4px; background: #1a1f2e; border-radius: 100px; width: 80px; margin: 12px auto 0; }
+
+/* INTERVIEW CARDS */
+.q-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 12px; overflow: hidden;
+}
+.q-card summary {
+  padding: 16px 20px; cursor: pointer; color: var(--text);
+  font-size: 13px; list-style: none; display: flex; align-items: center; gap: 12px;
+  user-select: none;
+}
+.q-card summary::-webkit-details-marker { display: none; }
+.q-num {
+  background: rgba(0,255,136,0.08); color: var(--green);
+  border: 1px solid rgba(0,255,136,0.2); border-radius: 6px;
+  font-size: 11px; padding: 3px 10px; flex-shrink: 0; font-weight: 600;
+}
+.q-card[open] summary { border-bottom: 1px solid var(--border); }
+.q-body { padding: 16px 20px; color: var(--text2); font-size: 13px; line-height: 1.8; }
+.q-toggle { margin-left: auto; color: var(--text3); transition: transform .2s; }
+.q-card[open] .q-toggle { transform: rotate(90deg); }
+
+/* TECH STACK TABLE */
+.tech-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tech-table th { background: #0f1218; color: var(--text3); font-weight: 500; text-align: left; padding: 10px 16px; border-bottom: 1px solid var(--border2); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+.tech-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+.tech-table tr:last-child td { border-bottom: none; }
+.tech-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* PROGRESS */
+.progress-path { display: flex; flex-direction: column; gap: 0; }
+.prog-item { display: flex; gap: 16px; }
+.prog-line { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.prog-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; flex-shrink: 0; z-index: 1;
+}
+.prog-vert { width: 1px; flex: 1; min-height: 20px; background: var(--border2); }
+.prog-content { padding-bottom: 28px; flex: 1; }
+.prog-content h4 { font-family: var(--sans); font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+.prog-content p { color: var(--text2); font-size: 13px; }
+
+/* SECURITY LEVELS */
+.sec-levels { display: flex; flex-direction: column; gap: 1px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border2); }
+.sec-level { display: flex; align-items: center; gap: 16px; padding: 14px 20px; background: var(--surface); }
+.sec-level:hover { background: #1e2438; }
+.sec-lvl-bar { flex: 1; height: 4px; background: var(--border2); border-radius: 100px; overflow: hidden; }
+.sec-lvl-fill { height: 100%; border-radius: 100px; }
+
+/* SCHEMA */
+.schema-table { border: 1px solid var(--border2); border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+.schema-header { background: #0f1218; padding: 10px 16px; font-size: 12px; color: var(--text3); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border2); }
+.schema-header span { color: var(--green); }
+.schema-row { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+.schema-row:last-child { border-bottom: none; }
+.schema-row:hover { background: rgba(255,255,255,0.02); }
+.schema-col { padding: 9px 16px; font-size: 12px; font-family: var(--mono); }
+.schema-field { color: var(--green2); width: 160px; flex-shrink: 0; }
+.schema-type { color: var(--amber2); width: 120px; flex-shrink: 0; }
+.schema-note { color: var(--text3); }
+
+/* API TABLE */
+.api-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.api-row:last-child { border-bottom: none; }
+.api-method { font-weight: 700; width: 60px; flex-shrink: 0; }
+.method-get { color: var(--green); }
+.method-post { color: var(--blue2); }
+.method-put { color: var(--amber2); }
+.method-del { color: #fca5a5; }
+.api-path { color: var(--text); font-family: var(--mono); flex: 1; }
+.api-desc { color: var(--text3); width: 220px; flex-shrink: 0; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="hero-badge"><span class="badge-dot"></span>Complete Project Guide — Senior Engineer Edition</div>
+    <h1>Phone Lock System<br><span>Simulation</span></h1>
+    <p class="hero-sub">A complete system design and implementation guide — from beginner PIN auth to advanced biometric simulation, JWT, 2FA, and a FastAPI-powered analytics dashboard. Built for interviews and production.</p>
+    <div class="hero-meta">
+      <div class="hero-stat">⬡ <span>3 Levels</span></div>
+      <div class="hero-stat">⬡ <span>Python + FastAPI</span></div>
+      <div class="hero-stat">⬡ <span>JWT + bcrypt + 2FA</span></div>
+      <div class="hero-stat">⬡ <span>OpenCV Biometrics</span></div>
+      <div class="hero-stat">⬡ <span>Interview Ready</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-wrap">
+  <div class="nav">
+    <button class="nav-btn active" onclick="showSection('how-it-works',this)">01 — How It Works</button>
+    <button class="nav-btn" onclick="showSection('level1',this)">02 — Level 1: Beginner</button>
+    <button class="nav-btn" onclick="showSection('level2',this)">03 — Level 2: Intermediate</button>
+    <button class="nav-btn" onclick="showSection('level3',this)">04 — Level 3: Advanced</button>
+    <button class="nav-btn" onclick="showSection('sysdesign',this)">05 — System Design</button>
+    <button class="nav-btn" onclick="showSection('dbschema',this)">06 — DB Schema</button>
+    <button class="nav-btn" onclick="showSection('api',this)">07 — API Design</button>
+    <button class="nav-btn" onclick="showSection('interview',this)">08 — Interview Prep</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<div id="how-it-works" class="section active">
+  <div class="sec-header">
+    <div class="sec-tag">// section 01</div>
+    <div class="sec-title">How Real Phone Lock Systems Work</div>
+    <div class="sec-desc">Understanding the real-world mechanisms before building — from PIN hashing to biometric templates and secure enclave storage.</div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:24px">
+    <!-- PIN AUTH -->
+    <div class="card">
+      <div class="card-title"><div class="icon icon-green">🔢</div>PIN Authentication</div>
+      <ul class="checklist">
+        <li>User enters 4–6 digit PIN on device</li>
+        <li>PIN is never stored in plain text</li>
+        <li>Hashed using PBKDF2 / bcrypt with device-specific salt</li>
+        <li>Hash is stored in Trusted Execution Environment (TEE)</li>
+        <li>On entry, hash of input compared to stored hash</li>
+        <li>Lockout after 5–10 failed attempts</li>
+      </ul>
+      <div style="margin-top:14px">
+        <div class="flow" style="padding:12px">
+          <div class="flow-node green">User Input</div>
+          <div class="flow-arr">→</div>
+          <div class="flow-node amber">Hash+Salt</div>
+          <div class="flow-arr">→</div>
+          <div class="flow-node blue">Compare</div>
+          <div class="flow-arr">→</div>
+          <div class="flow-node green">Unlock</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BIOMETRICS -->
+    <div class="card">
+      <div class="card-title"><div class="icon icon-purple">👁</div>Biometric Authentication</div>
+      <ul class="checklist">
+        <li><strong style="color:#fff">Fingerprint:</strong> Capacitive sensor captures ridge pattern</li>
+        <li>Pattern converted to a mathematical template (not raw image)</li>
+        <li>Template stored in Secure Enclave (Apple) / TrustZone (Android)</li>
+        <li><strong style="color:#fff">Face ID:</strong> IR camera + dot projector maps 30,000 points</li>
+        <li>Neural engine computes 3D depth map and matches</li>
+        <li>Biometric never leaves the chip — comparison done on-device</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:24px">
+    <!-- SECURE STORAGE -->
+    <div class="card">
+      <div class="card-title"><div class="icon icon-amber">🔐</div>Secure Storage</div>
+      <ul class="checklist">
+        <li><strong style="color:#fff">Secure Enclave</strong> — isolated coprocessor, separate memory</li>
+        <li>Keys generated inside enclave, never exposed to OS</li>
+        <li><strong style="color:#fff">PBKDF2/bcrypt/argon2</strong> used to stretch PINs</li>
+        <li>Salt: unique random bytes per device/user</li>
+        <li>Iterations: 100,000+ rounds to slow brute force</li>
+        <li>Android Keystore / iOS Keychain for key management</li>
+      </ul>
+      <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>python — hashing example</span></div>
+      <pre><span class="kw">import</span> bcrypt
+
+<span class="cm"># Store PIN</span>
+<span class="kw">def</span> <span class="fn">hash_pin</span>(pin: <span class="tp">str</span>) -> <span class="tp">bytes</span>:
+    salt = bcrypt.gensalt(rounds=<span class="nm">12</span>)
+    <span class="kw">return</span> bcrypt.hashpw(pin.encode(), salt)
+
+<span class="cm"># Verify PIN</span>
+<span class="kw">def</span> <span class="fn">verify_pin</span>(pin: <span class="tp">str</span>, hashed: <span class="tp">bytes</span>) -> <span class="tp">bool</span>:
+    <span class="kw">return</span> bcrypt.checkpw(pin.encode(), hashed)</pre>
+    </div>
+
+    <!-- LOCKOUT -->
+    <div class="card">
+      <div class="card-title"><div class="icon icon-red">⏱</div>Lockout Mechanism</div>
+      <ul class="checklist">
+        <li>Attempt counter increments on each failure</li>
+        <li>After 5 attempts → 30-second lockout</li>
+        <li>After 10 attempts → 1-hour lockout (progressive)</li>
+        <li>After N attempts → full wipe (optional)</li>
+        <li>Counter stored in persistent hardware memory</li>
+        <li>Counter resets ONLY on successful auth</li>
+      </ul>
+      <div style="margin-top:14px" class="sec-levels">
+        <div class="sec-level"><span style="color:var(--text2);font-size:12px;width:90px">1–3 fails</span><div class="sec-lvl-bar"><div class="sec-lvl-fill" style="width:30%;background:var(--green)"></div></div><span style="color:var(--green);font-size:11px;width:60px;text-align:right">Warning</span></div>
+        <div class="sec-level"><span style="color:var(--text2);font-size:12px;width:90px">4–5 fails</span><div class="sec-lvl-bar"><div class="sec-lvl-fill" style="width:55%;background:var(--amber)"></div></div><span style="color:var(--amber2);font-size:11px;width:60px;text-align:right">30s lock</span></div>
+        <div class="sec-level"><span style="color:var(--text2);font-size:12px;width:90px">6–9 fails</span><div class="sec-lvl-bar"><div class="sec-lvl-fill" style="width:75%;background:#f97316"></div></div><span style="color:#fb923c;font-size:11px;width:60px;text-align:right">1h lock</span></div>
+        <div class="sec-level"><span style="color:var(--text2);font-size:12px;width:90px">10+ fails</span><div class="sec-lvl-bar"><div class="sec-lvl-fill" style="width:100%;background:var(--red)"></div></div><span style="color:#fca5a5;font-size:11px;width:60px;text-align:right">Wipe</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 3 SIMULATORS ===== -->
+  <div class="card" style="margin-bottom:24px;border-color:rgba(0,255,136,0.15)">
+    <div class="card-title"><div class="icon icon-green">▶</div>Interactive Authentication Simulators — Try All 3!</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:20px">Experience exactly how each lock method works under the hood. Each simulator shows the real internal process — what data is captured, how it's verified, and what security steps happen.</p>
+
+    <!-- Sim Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap">
+      <button id="stab-pin" onclick="switchSim('pin')" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--green);font-family:var(--mono);font-size:12px;padding:9px 22px;border-radius:8px;cursor:pointer;transition:all .2s">🔢 PIN Lock</button>
+      <button id="stab-pat" onclick="switchSim('pat')" style="background:var(--surface);border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);font-size:12px;padding:9px 22px;border-radius:8px;cursor:pointer;transition:all .2s">⬡ Pattern Lock</button>
+      <button id="stab-fp"  onclick="switchSim('fp')"  style="background:var(--surface);border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);font-size:12px;padding:9px 22px;border-radius:8px;cursor:pointer;transition:all .2s">👆 Fingerprint</button>
+    </div>
+
+    <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start">
+
+      <!-- ---- PIN SIMULATOR ---- -->
+      <div id="sim-pin" style="flex:0 0 auto">
+        <div style="display:flex;justify-content:center">
+          <div class="phone" style="width:220px">
+            <div class="phone-notch"></div>
+            <div class="phone-screen" style="min-height:310px">
+              <div id="p-time" style="text-align:center;color:#fff;font-family:var(--sans);font-size:32px;font-weight:700">12:00</div>
+              <div style="text-align:center;color:var(--text3);font-size:10px;margin-bottom:16px">Thu, Apr 09</div>
+              <div id="p-status" style="text-align:center;font-size:11px;color:var(--text3);min-height:16px;margin-bottom:8px">Enter PIN · correct is <span style="color:var(--green)">1234</span></div>
+              <div style="display:flex;justify-content:center;gap:10px;margin-bottom:16px">
+                <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+                <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+              </div>
+              <div id="p-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                <button class="pin-key" onclick="pPin('1')">1</button><button class="pin-key" onclick="pPin('2')">2</button><button class="pin-key" onclick="pPin('3')">3</button>
+                <button class="pin-key" onclick="pPin('4')">4</button><button class="pin-key" onclick="pPin('5')">5</button><button class="pin-key" onclick="pPin('6')">6</button>
+                <button class="pin-key" onclick="pPin('7')">7</button><button class="pin-key" onclick="pPin('8')">8</button><button class="pin-key" onclick="pPin('9')">9</button>
+                <button class="pin-key" style="font-size:11px;color:var(--text3)" onclick="pPinReset()">CLR</button>
+                <button class="pin-key" onclick="pPin('0')">0</button>
+                <button class="pin-key del" onclick="pPinDel()">⌫</button>
+              </div>
+              <div style="display:flex;justify-content:center;gap:5px;margin-top:10px" id="p-att">
+                <div class="att-dot" id="pa0"></div><div class="att-dot" id="pa1"></div><div class="att-dot" id="pa2"></div><div class="att-dot" id="pa3"></div><div class="att-dot" id="pa4"></div>
+              </div>
+            </div>
+            <div class="phone-bottom"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- PATTERN SIMULATOR ---- -->
+      <div id="sim-pat" style="flex:0 0 auto;display:none">
+        <div style="display:flex;justify-content:center">
+          <div class="phone" style="width:220px">
+            <div class="phone-notch"></div>
+            <div class="phone-screen" style="min-height:310px;padding:12px">
+              <div style="text-align:center;color:#fff;font-family:var(--sans);font-size:32px;font-weight:700">12:00</div>
+              <div style="text-align:center;color:var(--text3);font-size:10px;margin-bottom:8px">Thu, Apr 09</div>
+              <div id="pat-status" style="text-align:center;font-size:11px;color:var(--text3);min-height:16px;margin-bottom:8px">Draw the pattern</div>
+              <canvas id="patCanvas" width="194" height="194" style="border-radius:10px;background:#090b0f;display:block;margin:0 auto;cursor:crosshair;touch-action:none"></canvas>
+              <div style="display:flex;justify-content:center;margin-top:10px">
+                <button onclick="patReset()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);font-size:11px;padding:5px 18px;border-radius:6px;cursor:pointer">Reset</button>
+              </div>
+            </div>
+            <div class="phone-bottom"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- FINGERPRINT SIMULATOR ---- -->
+      <div id="sim-fp" style="flex:0 0 auto;display:none">
+        <div style="display:flex;justify-content:center">
+          <div class="phone" style="width:220px">
+            <div class="phone-notch"></div>
+            <div class="phone-screen" style="min-height:310px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-align:center" id="fp-title">Touch &amp; hold sensor</div>
+              <div id="fp-ring" style="width:90px;height:90px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;margin:12px auto;position:relative;cursor:pointer;transition:all .3s" onmousedown="fpStart()" onmouseup="fpEnd()" ontouchstart="fpStart()" ontouchend="fpEnd()">
+                <svg id="fp-svg" width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path id="fp-p1" d="M30 8 C18 8 10 17 10 29" stroke="#262d40" stroke-width="2" stroke-linecap="round" fill="none"/>
+                  <path id="fp-p2" d="M30 8 C42 8 50 17 50 29" stroke="#262d40" stroke-width="2" stroke-linecap="round" fill="none"/>
+                  <path id="fp-p3" d="M14 35 C14 45 21 52 30 52 C39 52 46 45 46 35" stroke="#262d40" stroke-width="2" stroke-linecap="round" fill="none"/>
+                  <path id="fp-p4" d="M20 20 C20 14 24 11 30 11 C36 11 40 14 40 20 C40 28 36 33 30 33" stroke="#262d40" stroke-width="2" stroke-linecap="round" fill="none"/>
+                  <path id="fp-p5" d="M30 33 C24 33 20 28 20 22" stroke="#262d40" stroke-width="2" stroke-linecap="round" fill="none"/>
+                  <path id="fp-p6" d="M17 29 C17 20 23 14 30 14" stroke="#262d40" stroke-width="2" stroke-linecap="round" fill="none"/>
+                  <path id="fp-p7" d="M30 14 C37 14 43 20 43 29 C43 38 37 44 30 44 C23 44 17 38 17 29" stroke="#262d40" stroke-width="2" stroke-linecap="round" fill="none"/>
+                  <path id="fp-p8" d="M25 40 C22 37 20 33 20 29" stroke="#262d40" stroke-width="2" stroke-linecap="round" fill="none"/>
+                  <path id="fp-p9" d="M35 40 C38 37 40 33 40 29" stroke="#262d40" stroke-width="2" stroke-linecap="round" fill="none"/>
+                  <circle id="fp-glow" cx="30" cy="30" r="28" fill="none" stroke="transparent" stroke-width="1"/>
+                </svg>
+              </div>
+              <div id="fp-status" style="font-size:11px;color:var(--text3);text-align:center;min-height:32px"></div>
+              <div id="fp-scan-bar" style="width:80%;height:3px;background:var(--border2);border-radius:100px;overflow:hidden;margin-top:8px">
+                <div id="fp-scan-fill" style="height:100%;width:0%;background:var(--green);border-radius:100px;transition:width .1s linear"></div>
+              </div>
+              <div id="fp-steps" style="margin-top:14px;font-size:10px;color:var(--text3);text-align:center;line-height:1.9"></div>
+            </div>
+            <div class="phone-bottom"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: HOW IT WORKS PANEL -->
+      <div style="flex:1;min-width:240px">
+        <!-- PIN explanation -->
+        <div id="exp-pin">
+          <div style="font-family:var(--sans);font-size:15px;font-weight:700;color:#fff;margin-bottom:12px">🔢 How PIN Lock Works</div>
+          <div id="pin-steps-panel">
+            <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);color:var(--green);width:26px;height:26px;font-size:11px">1</div><div class="prog-vert" style="min-height:14px"></div></div><div class="prog-content" style="padding-bottom:14px"><h4 style="font-size:13px">User taps digits</h4><p style="font-size:12px">OS captures keypress events. Raw digit is never logged.</p></div></div>
+            <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:var(--amber2);width:26px;height:26px;font-size:11px">2</div><div class="prog-vert" style="min-height:14px"></div></div><div class="prog-content" style="padding-bottom:14px"><h4 style="font-size:13px">PIN → Hash + Salt</h4><p style="font-size:12px">bcrypt(PIN + salt, rounds=12). Takes ~300ms intentionally.</p></div></div>
+            <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--blue2);width:26px;height:26px;font-size:11px">3</div><div class="prog-vert" style="min-height:14px"></div></div><div class="prog-content" style="padding-bottom:14px"><h4 style="font-size:13px">Hash comparison in TEE</h4><p style="font-size:12px">Stored hash vs computed hash compared inside Secure Enclave.</p></div></div>
+            <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);color:var(--green);width:26px;height:26px;font-size:11px">4</div></div><div class="prog-content"><h4 style="font-size:13px">Grant access or increment counter</h4><p style="font-size:12px">Match → unlock. Fail → attempt counter +1. 5 fails = lockout.</p></div></div>
+          </div>
+          <div style="margin-top:16px;background:#090b0f;border:1px solid var(--border2);border-radius:8px;padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">Under the hood</div>
+            <pre style="font-size:11px;margin:0;background:transparent;border:none;padding:0"><span class="cm"># What happens when you press 1→2→3→4</span>
+raw_input  = <span class="str">"1234"</span>
+hash_check = bcrypt.checkpw(
+    raw_input.encode(),
+    stored_hash  <span class="cm"># from Secure Enclave</span>
+)
+<span class="cm"># stored_hash = "$2b$12$abcdef..."</span>
+<span class="cm"># Raw PIN is NEVER stored anywhere</span></pre>
+          </div>
+        </div>
+
+        <!-- Pattern explanation -->
+        <div id="exp-pat" style="display:none">
+          <div style="font-family:var(--sans);font-size:15px;font-weight:700;color:#fff;margin-bottom:12px">⬡ How Pattern Lock Works</div>
+          <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);color:var(--purple);width:26px;height:26px;font-size:11px">1</div><div class="prog-vert" style="min-height:14px"></div></div><div class="prog-content" style="padding-bottom:14px"><h4 style="font-size:13px">Touch events recorded</h4><p style="font-size:12px">Screen tracks X,Y coordinates as finger moves across the 3×3 grid.</p></div></div>
+          <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:var(--cyan);width:26px;height:26px;font-size:11px">2</div><div class="prog-vert" style="min-height:14px"></div></div><div class="prog-content" style="padding-bottom:14px"><h4 style="font-size:13px">Node sequence extracted</h4><p style="font-size:12px">Which dots were hit, in order → e.g. [1,2,3,5,8] = sequence string.</p></div></div>
+          <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:var(--amber2);width:26px;height:26px;font-size:11px">3</div><div class="prog-vert" style="min-height:14px"></div></div><div class="prog-content" style="padding-bottom:14px"><h4 style="font-size:13px">Sequence is hashed</h4><p style="font-size:12px">SHA-1 / bcrypt of the node sequence string. Pattern = "12358" → hash.</p></div></div>
+          <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);color:var(--green);width:26px;height:26px;font-size:11px">4</div></div><div class="prog-content"><h4 style="font-size:13px">Hash compared, access granted</h4><p style="font-size:12px">Same as PIN — compare computed hash to stored hash. Never store the raw sequence.</p></div></div>
+          <div style="margin-top:16px;background:#090b0f;border:1px solid var(--border2);border-radius:8px;padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">Security note</div>
+            <p style="font-size:11px;color:var(--text2);line-height:1.7">Pattern has only 389,112 possible combinations (vs 10,000 for 4-digit PIN but with smudge-attack vulnerability). Android deprecated it in favor of PIN/biometric. <span style="color:var(--amber2)">Correct pattern: L-shape → nodes 1→4→7→8→9</span></p>
+          </div>
+        </div>
+
+        <!-- Fingerprint explanation -->
+        <div id="exp-fp" style="display:none">
+          <div style="font-family:var(--sans);font-size:15px;font-weight:700;color:#fff;margin-bottom:12px">👆 How Fingerprint Works</div>
+          <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);color:var(--purple);width:26px;height:26px;font-size:11px">1</div><div class="prog-vert" style="min-height:14px"></div></div><div class="prog-content" style="padding-bottom:14px"><h4 style="font-size:13px">Capacitive sensor fires</h4><p style="font-size:12px">500+ microscopic capacitors measure ridge vs valley at each point.</p></div></div>
+          <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:var(--cyan);width:26px;height:26px;font-size:11px">2</div><div class="prog-vert" style="min-height:14px"></div></div><div class="prog-content" style="padding-bottom:14px"><h4 style="font-size:13px">Minutiae extracted</h4><p style="font-size:12px">Ridge endings, bifurcations mapped into a coordinate template. Never a raw image.</p></div></div>
+          <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:var(--amber2);width:26px;height:26px;font-size:11px">3</div><div class="prog-vert" style="min-height:14px"></div></div><div class="prog-content" style="padding-bottom:14px"><h4 style="font-size:13px">Template matching in Secure Enclave</h4><p style="font-size:12px">Current template vs enrolled template using Euclidean distance with 0.1% FAR threshold.</p></div></div>
+          <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);color:var(--green);width:26px;height:26px;font-size:11px">4</div></div><div class="prog-content"><h4 style="font-size:13px">Cryptographic key released</h4><p style="font-size:12px">Match unlocks a private key which decrypts device storage. No match = key stays locked.</p></div></div>
+          <div style="margin-top:16px;background:#090b0f;border:1px solid var(--border2);border-radius:8px;padding:12px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">Key security facts</div>
+            <p style="font-size:11px;color:var(--text2);line-height:1.7">False Accept Rate: <span style="color:var(--green)">1 in 50,000</span> (vs Face ID: 1 in 1,000,000). Template is stored encrypted in Secure Enclave — not in flash storage, not accessible by any app or OS process. <span style="color:var(--amber2)">Press &amp; hold the sensor to try it!</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEVICE SECURITY LAYERS -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-cyan">⬡</div>Device Security Layers</div>
+    <div class="arch" style="margin-top:8px">
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:rgba(6,182,212,0.4);color:var(--cyan);background:rgba(6,182,212,0.05);min-width:180px">👤 User Interface Layer<br><span style="font-size:10px;color:var(--text3)">PIN entry / Biometric sensor</span></div>
+      </div>
+      <div style="text-align:center;color:var(--text3);font-size:12px;margin:4px 0">↓</div>
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:rgba(139,92,246,0.4);color:var(--purple);background:rgba(139,92,246,0.05)">OS Auth Layer<br><span style="font-size:10px;color:var(--text3)">Policy + Attempt counter</span></div>
+        <div style="color:var(--text3);padding:0 8px">↔</div>
+        <div class="arch-box" style="border-color:rgba(59,130,246,0.4);color:var(--blue2);background:rgba(59,130,246,0.05)">Keystore / Keychain<br><span style="font-size:10px;color:var(--text3)">Key management</span></div>
+      </div>
+      <div style="text-align:center;color:var(--text3);font-size:12px;margin:4px 0">↓</div>
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:rgba(0,255,136,0.4);color:var(--green);background:rgba(0,255,136,0.05);min-width:200px">Trusted Execution Environment (TEE)<br><span style="font-size:10px;color:var(--text3)">bcrypt/PBKDF2 comparison, biometric match</span></div>
+      </div>
+      <div style="text-align:center;color:var(--text3);font-size:12px;margin:4px 0">↓</div>
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:rgba(245,158,11,0.4);color:var(--amber2);background:rgba(245,158,11,0.05);min-width:220px">Secure Enclave / TrustZone (Hardware)<br><span style="font-size:10px;color:var(--text3)">Keys NEVER leave this boundary</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== LEVEL 1 ===================== -->
+<div id="level1" class="section">
+  <div class="sec-header">
+    <div class="sec-tag">// section 02</div>
+    <div class="sec-title">Level 1 — Beginner</div>
+    <div class="sec-desc">Simple PIN-based lock system. Console-based implementation with basic validation and attempt limits. Your foundation.</div>
+  </div>
+
+  <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center">
+    <span class="badge badge-green">Python 3.10+</span>
+    <span class="badge badge-blue">Console / CLI</span>
+    <span class="badge badge-amber">No external deps</span>
+    <span class="badge badge-purple">hashlib built-in</span>
+  </div>
+
+  <!-- Live Simulator -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-title"><div class="icon icon-green">▶</div>Live PIN Simulator — Try It!</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:20px">This simulates how a real PIN lock works. The correct PIN is <strong style="color:var(--green)">1234</strong>. You have <strong style="color:var(--amber2)">5 attempts</strong> before lockout.</p>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="phone-time" id="sim-time">12:00</div>
+          <div class="phone-date" id="sim-date">Thu, Apr 09</div>
+          <div class="pin-status" id="pin-status">Enter PIN to unlock</div>
+          <div class="pin-display">
+            <div class="pin-dot" id="d0"></div>
+            <div class="pin-dot" id="d1"></div>
+            <div class="pin-dot" id="d2"></div>
+            <div class="pin-dot" id="d3"></div>
+          </div>
+          <div class="pin-grid" id="pin-grid">
+            <button class="pin-key" onclick="pressKey('1')">1</button>
+            <button class="pin-key" onclick="pressKey('2')">2</button>
+            <button class="pin-key" onclick="pressKey('3')">3</button>
+            <button class="pin-key" onclick="pressKey('4')">4</button>
+            <button class="pin-key" onclick="pressKey('5')">5</button>
+            <button class="pin-key" onclick="pressKey('6')">6</button>
+            <button class="pin-key" onclick="pressKey('7')">7</button>
+            <button class="pin-key" onclick="pressKey('8')">8</button>
+            <button class="pin-key" onclick="pressKey('9')">9</button>
+            <button class="pin-key" onclick="pressKey('')">⋯</button>
+            <button class="pin-key" onclick="pressKey('0')">0</button>
+            <button class="pin-key del" onclick="deleteKey()">⌫</button>
+          </div>
+          <div class="attempts-bar" id="att-bar">
+            <div class="att-dot" id="a0"></div>
+            <div class="att-dot" id="a1"></div>
+            <div class="att-dot" id="a2"></div>
+            <div class="att-dot" id="a3"></div>
+            <div class="att-dot" id="a4"></div>
+          </div>
+        </div>
+        <div class="phone-bottom"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Folder Structure -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-amber">📁</div>Folder Structure</div>
+    <pre><span class="cm">phone_lock_l1/</span>
+├── <span class="fn">main.py</span>          <span class="cm"># Entry point</span>
+├── <span class="fn">auth.py</span>          <span class="cm"># PIN hashing & verification</span>
+├── <span class="fn">lockout.py</span>       <span class="cm"># Attempt counter & lockout logic</span>
+├── <span class="fn">storage.py</span>       <span class="cm"># JSON file-based storage</span>
+└── <span class="fn">config.py</span>        <span class="cm"># MAX_ATTEMPTS, PIN_LENGTH etc.</span></pre>
+  </div>
+
+  <!-- Code: config -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-blue">⚙</div>config.py</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>config.py</span></div>
+    <pre><span class="cm"># config.py</span>
+MAX_ATTEMPTS   = <span class="nm">5</span>
+PIN_LENGTH     = <span class="nm">4</span>
+LOCKOUT_SECS   = <span class="nm">30</span>
+STORAGE_FILE   = <span class="str">"device_data.json"</span></pre>
+  </div>
+
+  <!-- Code: auth -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-green">🔒</div>auth.py — PIN Hashing with hashlib</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>auth.py</span></div>
+    <pre><span class="kw">import</span> hashlib, os, json
+<span class="kw">from</span> config <span class="kw">import</span> STORAGE_FILE
+
+<span class="kw">def</span> <span class="fn">setup_pin</span>(pin: <span class="tp">str</span>) -> <span class="tp">None</span>:
+    <span class="str">"""Hash PIN with salt and save to file."""</span>
+    salt = os.urandom(<span class="nm">32</span>).hex()
+    hashed = hashlib.pbkdf2_hmac(
+        <span class="str">'sha256'</span>, pin.encode(), bytes.fromhex(salt), <span class="nm">100_000</span>
+    ).hex()
+    data = {<span class="str">"pin_hash"</span>: hashed, <span class="str">"salt"</span>: salt, <span class="str">"attempts"</span>: <span class="nm">0</span>, <span class="str">"locked_until"</span>: <span class="kw">None</span>}
+    json.dump(data, open(STORAGE_FILE, <span class="str">"w"</span>))
+    <span class="fn">print</span>(<span class="str">"✔ PIN set successfully"</span>)
+
+<span class="kw">def</span> <span class="fn">verify_pin</span>(pin: <span class="tp">str</span>, stored_data: <span class="tp">dict</span>) -> <span class="tp">bool</span>:
+    <span class="str">"""Re-hash input and compare with stored hash."""</span>
+    hashed = hashlib.pbkdf2_hmac(
+        <span class="str">'sha256'</span>,
+        pin.encode(),
+        bytes.fromhex(stored_data[<span class="str">'salt'</span>]),
+        <span class="nm">100_000</span>
+    ).hex()
+    <span class="kw">return</span> hashed == stored_data[<span class="str">'pin_hash'</span>]</pre>
+  </div>
+
+  <!-- Code: lockout -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-red">⛔</div>lockout.py — Attempt Counter + Timeout</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>lockout.py</span></div>
+    <pre><span class="kw">import</span> time, json
+<span class="kw">from</span> config <span class="kw">import</span> STORAGE_FILE, MAX_ATTEMPTS, LOCKOUT_SECS
+
+<span class="kw">def</span> <span class="fn">is_locked</span>(data: <span class="tp">dict</span>) -> <span class="tp">bool</span>:
+    <span class="kw">if</span> data.get(<span class="str">"locked_until"</span>):
+        remaining = data[<span class="str">"locked_until"</span>] - time.time()
+        <span class="kw">if</span> remaining > <span class="nm">0</span>:
+            <span class="fn">print</span>(<span class="str">f"🔒 Locked. Try again in {remaining:.0f}s"</span>)
+            <span class="kw">return</span> <span class="kw">True</span>
+        data[<span class="str">"locked_until"</span>] = <span class="kw">None</span>   <span class="cm"># lockout expired</span>
+    <span class="kw">return</span> <span class="kw">False</span>
+
+<span class="kw">def</span> <span class="fn">record_failure</span>(data: <span class="tp">dict</span>) -> <span class="tp">None</span>:
+    data[<span class="str">"attempts"</span>] += <span class="nm">1</span>
+    remaining = MAX_ATTEMPTS - data[<span class="str">"attempts"</span>]
+    <span class="kw">if</span> data[<span class="str">"attempts"</span>] >= MAX_ATTEMPTS:
+        data[<span class="str">"locked_until"</span>] = time.time() + LOCKOUT_SECS
+        <span class="fn">print</span>(<span class="str">f"🚨 Too many attempts! Locked for {LOCKOUT_SECS}s"</span>)
+    <span class="kw">else</span>:
+        <span class="fn">print</span>(<span class="str">f"❌ Wrong PIN. {remaining} attempts left."</span>)
+    json.dump(data, open(STORAGE_FILE, <span class="str">"w"</span>))
+
+<span class="kw">def</span> <span class="fn">record_success</span>(data: <span class="tp">dict</span>) -> <span class="tp">None</span>:
+    data[<span class="str">"attempts"</span>] = <span class="nm">0</span>
+    data[<span class="str">"locked_until"</span>] = <span class="kw">None</span>
+    json.dump(data, open(STORAGE_FILE, <span class="str">"w"</span>))</pre>
+  </div>
+
+  <!-- Code: main -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-cyan">▶</div>main.py — Entry Point</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>main.py</span></div>
+    <pre><span class="kw">import</span> json, os
+<span class="kw">from</span> auth    <span class="kw">import</span> setup_pin, verify_pin
+<span class="kw">from</span> lockout <span class="kw">import</span> is_locked, record_failure, record_success
+<span class="kw">from</span> config  <span class="kw">import</span> STORAGE_FILE, PIN_LENGTH
+
+<span class="kw">def</span> <span class="fn">main</span>():
+    <span class="cm"># First run: set up PIN</span>
+    <span class="kw">if not</span> os.path.exists(STORAGE_FILE):
+        pin = <span class="fn">input</span>(<span class="str">"Set your PIN: "</span>)
+        <span class="fn">setup_pin</span>(pin)
+
+    data = json.load(<span class="fn">open</span>(STORAGE_FILE))
+
+    <span class="kw">if</span> <span class="fn">is_locked</span>(data):
+        <span class="kw">return</span>
+
+    pin = <span class="fn">input</span>(<span class="str">"Enter PIN: "</span>)
+    <span class="kw">if</span> <span class="fn">verify_pin</span>(pin, data):
+        <span class="fn">print</span>(<span class="str">"✅ Unlocked! Welcome."</span>)
+        <span class="fn">record_success</span>(data)
+    <span class="kw">else</span>:
+        <span class="fn">record_failure</span>(data)
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    <span class="fn">main</span>()</pre>
+  </div>
+</div>
+
+<!-- ===================== LEVEL 2 ===================== -->
+<div id="level2" class="section">
+  <div class="sec-header">
+    <div class="sec-tag">// section 03</div>
+    <div class="sec-title">Level 2 — Intermediate</div>
+    <div class="sec-desc">Add bcrypt hashing, SQLite database, login history, progressive lockout, and a basic web UI using Flask.</div>
+  </div>
+
+  <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center">
+    <span class="badge badge-green">bcrypt</span>
+    <span class="badge badge-blue">SQLite + SQLAlchemy</span>
+    <span class="badge badge-amber">Flask UI</span>
+    <span class="badge badge-purple">Login History</span>
+    <span class="badge badge-red">Progressive Lockout</span>
+  </div>
+
+  <!-- Folder Structure -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-amber">📁</div>Project Folder Structure</div>
+    <pre><span class="cm">phone_lock_l2/</span>
+├── <span class="fn">app/</span>
+│   ├── <span class="fn">__init__.py</span>      <span class="cm"># Flask app factory</span>
+│   ├── <span class="fn">models.py</span>        <span class="cm"># SQLAlchemy models</span>
+│   ├── <span class="fn">auth.py</span>          <span class="cm"># bcrypt hashing</span>
+│   ├── <span class="fn">lockout.py</span>       <span class="cm"># Progressive lockout</span>
+│   ├── <span class="fn">routes.py</span>        <span class="cm"># Flask routes</span>
+│   └── <span class="fn">templates/</span>
+│       ├── <span class="fn">lock.html</span>    <span class="cm"># PIN entry page</span>
+│       └── <span class="fn">home.html</span>    <span class="cm"># Post-unlock dashboard</span>
+├── <span class="fn">migrations/</span>          <span class="cm"># Alembic migrations</span>
+├── <span class="fn">tests/</span>
+│   └── <span class="fn">test_auth.py</span>
+├── <span class="fn">config.py</span>
+├── <span class="fn">requirements.txt</span>
+└── <span class="fn">run.py</span></pre>
+  </div>
+
+  <!-- Models -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-blue">🗄</div>models.py — SQLAlchemy ORM</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>app/models.py</span></div>
+    <pre><span class="kw">from</span> flask_sqlalchemy <span class="kw">import</span> SQLAlchemy
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+
+db = SQLAlchemy()
+
+<span class="kw">class</span> <span class="tp">Device</span>(db.Model):
+    id            = db.Column(db.Integer,     primary_key=<span class="kw">True</span>)
+    device_id     = db.Column(db.String(<span class="nm">64</span>),  unique=<span class="kw">True</span>, nullable=<span class="kw">False</span>)
+    pin_hash      = db.Column(db.String(<span class="nm">256</span>), nullable=<span class="kw">False</span>)
+    attempts      = db.Column(db.Integer,     default=<span class="nm">0</span>)
+    locked_until  = db.Column(db.DateTime,    nullable=<span class="kw">True</span>)
+    created_at    = db.Column(db.DateTime,    default=datetime.utcnow)
+
+<span class="kw">class</span> <span class="tp">LoginHistory</span>(db.Model):
+    id         = db.Column(db.Integer,  primary_key=<span class="kw">True</span>)
+    device_id  = db.Column(db.String(<span class="nm">64</span>), db.ForeignKey(<span class="str">'device.device_id'</span>))
+    timestamp  = db.Column(db.DateTime, default=datetime.utcnow)
+    success    = db.Column(db.Boolean,  nullable=<span class="kw">False</span>)
+    ip_address = db.Column(db.String(<span class="nm">45</span>), nullable=<span class="kw">True</span>)
+    method     = db.Column(db.String(<span class="nm">20</span>), default=<span class="str">'PIN'</span>) <span class="cm"># PIN/BIOMETRIC/OTP</span></pre>
+  </div>
+
+  <!-- bcrypt auth -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-green">🔑</div>auth.py — bcrypt (Industry Standard)</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>app/auth.py</span></div>
+    <pre><span class="kw">import</span> bcrypt
+<span class="kw">from</span> .models <span class="kw">import</span> db, Device, LoginHistory
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+
+<span class="kw">def</span> <span class="fn">hash_pin</span>(pin: <span class="tp">str</span>) -> <span class="tp">str</span>:
+    <span class="str">"""bcrypt auto-generates and embeds salt in hash."""</span>
+    <span class="kw">return</span> bcrypt.hashpw(
+        pin.encode(<span class="str">'utf-8'</span>),
+        bcrypt.gensalt(rounds=<span class="nm">12</span>)
+    ).decode(<span class="str">'utf-8'</span>)
+
+<span class="kw">def</span> <span class="fn">verify_and_log</span>(
+    device_id: <span class="tp">str</span>, pin: <span class="tp">str</span>, ip: <span class="tp">str</span>
+) -> <span class="tp">dict</span>:
+    device = Device.query.filter_by(device_id=device_id).first_or_404()
+
+    <span class="cm"># Check lockout</span>
+    <span class="kw">if</span> device.locked_until <span class="kw">and</span> device.locked_until > datetime.utcnow():
+        secs = (device.locked_until - datetime.utcnow()).seconds
+        <span class="kw">return</span> {<span class="str">"success"</span>: <span class="kw">False</span>, <span class="str">"locked"</span>: <span class="kw">True</span>, <span class="str">"retry_in"</span>: secs}
+
+    ok = bcrypt.checkpw(pin.encode(), device.pin_hash.encode())
+
+    <span class="cm"># Log the attempt</span>
+    db.session.add(LoginHistory(
+        device_id=device_id, success=ok, ip_address=ip
+    ))
+
+    <span class="kw">if</span> ok:
+        device.attempts = <span class="nm">0</span>
+        device.locked_until = <span class="kw">None</span>
+    <span class="kw">else</span>:
+        device.attempts += <span class="nm">1</span>
+        device.locked_until = <span class="fn">_compute_lockout</span>(device.attempts)
+
+    db.session.commit()
+    <span class="kw">return</span> {<span class="str">"success"</span>: ok, <span class="str">"attempts"</span>: device.attempts}
+
+<span class="kw">def</span> <span class="fn">_compute_lockout</span>(attempts: <span class="tp">int</span>):
+    <span class="kw">from</span> datetime <span class="kw">import</span> timedelta
+    <span class="cm"># Progressive: 30s → 5m → 30m → 1h → 24h</span>
+    schedule = [<span class="nm">30</span>, <span class="nm">300</span>, <span class="nm">1800</span>, <span class="nm">3600</span>, <span class="nm">86400</span>]
+    <span class="kw">if</span> attempts < <span class="nm">5</span>: <span class="kw">return None</span>
+    idx = <span class="fn">min</span>(attempts - <span class="nm">5</span>, <span class="fn">len</span>(schedule) - <span class="nm">1</span>)
+    <span class="kw">return</span> datetime.utcnow() + timedelta(seconds=schedule[idx])</pre>
+  </div>
+
+  <!-- Requirements -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-amber">📦</div>requirements.txt</div>
+    <pre>Flask==3.0.3
+flask-sqlalchemy==3.1.1
+flask-migrate==4.0.7
+bcrypt==4.1.3
+python-dotenv==1.0.1
+pytest==8.1.1
+pytest-flask==1.3.0</pre>
+  </div>
+
+  <!-- Progressive Lockout Visual -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-red">⏱</div>Progressive Lockout Schedule</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+      <div style="display:flex;align-items:center;gap:12px;font-size:12px">
+        <div style="width:80px;color:var(--text3)">Attempt 1–4</div>
+        <div style="flex:1;height:6px;background:var(--border2);border-radius:100px;overflow:hidden"><div style="width:0%;height:100%;background:var(--green)"></div></div>
+        <div style="width:80px;color:var(--green);text-align:right">No lockout</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:12px">
+        <div style="width:80px;color:var(--text3)">Attempt 5</div>
+        <div style="flex:1;height:6px;background:var(--border2);border-radius:100px;overflow:hidden"><div style="width:15%;height:100%;background:var(--amber)"></div></div>
+        <div style="width:80px;color:var(--amber2);text-align:right">30 seconds</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:12px">
+        <div style="width:80px;color:var(--text3)">Attempt 6</div>
+        <div style="flex:1;height:6px;background:var(--border2);border-radius:100px;overflow:hidden"><div style="width:30%;height:100%;background:#f97316"></div></div>
+        <div style="width:80px;color:#fb923c;text-align:right">5 minutes</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:12px">
+        <div style="width:80px;color:var(--text3)">Attempt 7</div>
+        <div style="flex:1;height:6px;background:var(--border2);border-radius:100px;overflow:hidden"><div style="width:55%;height:100%;background:#e85d0a"></div></div>
+        <div style="width:80px;color:#fb923c;text-align:right">30 minutes</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:12px">
+        <div style="width:80px;color:var(--text3)">Attempt 8</div>
+        <div style="flex:1;height:6px;background:var(--border2);border-radius:100px;overflow:hidden"><div style="width:75%;height:100%;background:#dc3a0a"></div></div>
+        <div style="width:80px;color:#fca5a5;text-align:right">1 hour</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;font-size:12px">
+        <div style="width:80px;color:var(--text3)">Attempt 9+</div>
+        <div style="flex:1;height:6px;background:var(--border2);border-radius:100px;overflow:hidden"><div style="width:100%;height:100%;background:var(--red)"></div></div>
+        <div style="width:80px;color:#fca5a5;text-align:right">24 hours</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== LEVEL 3 ===================== -->
+<div id="level3" class="section">
+  <div class="sec-header">
+    <div class="sec-tag">// section 04</div>
+    <div class="sec-title">Level 3 — Advanced</div>
+    <div class="sec-desc">Full production system: FastAPI backend, JWT auth, OTP/2FA, biometric simulation with OpenCV, intrusion detection, and analytics dashboard.</div>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;align-items:center">
+    <span class="badge badge-green">FastAPI</span>
+    <span class="badge badge-blue">JWT Access+Refresh</span>
+    <span class="badge badge-amber">TOTP / 2FA</span>
+    <span class="badge badge-purple">OpenCV Face Detection</span>
+    <span class="badge badge-red">Intrusion Detection</span>
+    <span class="badge badge-green">PostgreSQL</span>
+    <span class="badge badge-blue">Redis Cache</span>
+    <span class="badge badge-purple">Docker Compose</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="icon icon-amber">📁</div>Advanced Folder Structure</div>
+    <pre><span class="cm">phone_lock_l3/</span>
+├── <span class="fn">app/</span>
+│   ├── <span class="fn">api/</span>
+│   │   ├── <span class="fn">v1/</span>
+│   │   │   ├── <span class="fn">auth.py</span>         <span class="cm"># /auth endpoints</span>
+│   │   │   ├── <span class="fn">biometric.py</span>    <span class="cm"># Face detection endpoints</span>
+│   │   │   └── <span class="fn">analytics.py</span>    <span class="cm"># Dashboard data endpoints</span>
+│   │   └── <span class="fn">router.py</span>
+│   ├── <span class="fn">core/</span>
+│   │   ├── <span class="fn">jwt_handler.py</span>      <span class="cm"># Access + Refresh tokens</span>
+│   │   ├── <span class="fn">otp_handler.py</span>      <span class="cm"># TOTP (Google Auth compat)</span>
+│   │   ├── <span class="fn">biometric.py</span>        <span class="cm"># OpenCV face detection</span>
+│   │   └── <span class="fn">intrusion.py</span>        <span class="cm"># Capture image on failure</span>
+│   ├── <span class="fn">db/</span>
+│   │   ├── <span class="fn">models.py</span>           <span class="cm"># SQLAlchemy models</span>
+│   │   └── <span class="fn">session.py</span>          <span class="cm"># Async DB session</span>
+│   └── <span class="fn">main.py</span>               <span class="cm"># FastAPI app + CORS</span>
+├── <span class="fn">alembic/</span>                   <span class="cm"># DB migrations</span>
+├── <span class="fn">tests/</span>
+├── <span class="fn">Dockerfile</span>
+├── <span class="fn">docker-compose.yml</span>
+└── <span class="fn">requirements.txt</span></pre>
+  </div>
+
+  <!-- JWT Handler -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-blue">🎫</div>jwt_handler.py — Access + Refresh Tokens</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>app/core/jwt_handler.py</span></div>
+    <pre><span class="kw">from</span> datetime <span class="kw">import</span> datetime, timedelta
+<span class="kw">from</span> jose <span class="kw">import</span> jwt, JWTError
+<span class="kw">import</span> os
+
+SECRET_KEY     = os.getenv(<span class="str">"JWT_SECRET"</span>)
+ALGORITHM      = <span class="str">"HS256"</span>
+ACCESS_EXPIRE  = timedelta(minutes=<span class="nm">15</span>)   <span class="cm"># Short-lived</span>
+REFRESH_EXPIRE = timedelta(days=<span class="nm">7</span>)       <span class="cm"># Long-lived</span>
+
+<span class="kw">def</span> <span class="fn">create_access_token</span>(device_id: <span class="tp">str</span>) -> <span class="tp">str</span>:
+    payload = {
+        <span class="str">"sub"</span>  : device_id,
+        <span class="str">"type"</span> : <span class="str">"access"</span>,
+        <span class="str">"exp"</span>  : datetime.utcnow() + ACCESS_EXPIRE
+    }
+    <span class="kw">return</span> jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+<span class="kw">def</span> <span class="fn">create_refresh_token</span>(device_id: <span class="tp">str</span>) -> <span class="tp">str</span>:
+    payload = {
+        <span class="str">"sub"</span>  : device_id,
+        <span class="str">"type"</span> : <span class="str">"refresh"</span>,
+        <span class="str">"exp"</span>  : datetime.utcnow() + REFRESH_EXPIRE
+    }
+    <span class="kw">return</span> jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+<span class="kw">def</span> <span class="fn">decode_token</span>(token: <span class="tp">str</span>) -> <span class="tp">dict</span>:
+    <span class="kw">try</span>:
+        <span class="kw">return</span> jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    <span class="kw">except</span> JWTError:
+        <span class="kw">raise</span> HTTPException(status_code=<span class="nm">401</span>, detail=<span class="str">"Invalid token"</span>)</pre>
+  </div>
+
+  <!-- OTP/2FA -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-green">📱</div>otp_handler.py — TOTP / 2FA (Google Authenticator)</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>app/core/otp_handler.py</span></div>
+    <pre><span class="kw">import</span> pyotp, qrcode, io, base64
+
+<span class="kw">def</span> <span class="fn">generate_secret</span>() -> <span class="tp">str</span>:
+    <span class="str">"""Generate unique TOTP secret per device."""</span>
+    <span class="kw">return</span> pyotp.random_base32()
+
+<span class="kw">def</span> <span class="fn">get_qr_code</span>(secret: <span class="tp">str</span>, device_id: <span class="tp">str</span>) -> <span class="tp">str</span>:
+    <span class="str">"""Returns base64 QR code image for scanning in Google Auth."""</span>
+    uri = pyotp.totp.TOTP(secret).provisioning_uri(
+        name=device_id, issuer_name=<span class="str">"PhoneLock"</span>
+    )
+    img = qrcode.make(uri)
+    buf = io.BytesIO()
+    img.save(buf, format=<span class="str">"PNG"</span>)
+    <span class="kw">return</span> base64.b64encode(buf.getvalue()).decode()
+
+<span class="kw">def</span> <span class="fn">verify_otp</span>(secret: <span class="tp">str</span>, otp: <span class="tp">str</span>) -> <span class="tp">bool</span>:
+    <span class="str">"""Verify 6-digit TOTP code. Window=1 allows ±30s clock drift."""</span>
+    totp = pyotp.TOTP(secret)
+    <span class="kw">return</span> totp.verify(otp, valid_window=<span class="nm">1</span>)</pre>
+  </div>
+
+  <!-- Biometric / OpenCV -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-purple">👁</div>biometric.py — Face Detection Simulation (OpenCV)</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>app/core/biometric.py</span></div>
+    <pre><span class="kw">import</span> cv2, numpy <span class="kw">as</span> np, base64
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+
+<span class="cm"># Load Haar Cascade (ships with OpenCV)</span>
+FACE_CASCADE = cv2.CascadeClassifier(
+    cv2.data.haarcascades + <span class="str">"haarcascade_frontalface_default.xml"</span>
+)
+
+<span class="kw">def</span> <span class="fn">detect_face</span>(image_b64: <span class="tp">str</span>) -> <span class="tp">dict</span>:
+    <span class="str">"""Detect face in base64-encoded image."""</span>
+    img_data = base64.b64decode(image_b64)
+    nparr   = np.frombuffer(img_data, np.uint8)
+    img     = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    gray    = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    faces = FACE_CASCADE.detectMultiScale(
+        gray, scaleFactor=<span class="nm">1.1</span>, minNeighbors=<span class="nm">5</span>, minSize=(<span class="nm">100</span>, <span class="nm">100</span>)
+    )
+    <span class="kw">return</span> {
+        <span class="str">"face_detected"</span>: <span class="fn">len</span>(faces) > <span class="nm">0</span>,
+        <span class="str">"face_count"</span>   : <span class="fn">len</span>(faces),
+        <span class="str">"confidence"</span>   : <span class="nm">0.92</span> <span class="kw">if</span> <span class="fn">len</span>(faces) > <span class="nm">0</span> <span class="kw">else</span> <span class="nm">0.0</span>
+    }
+
+<span class="kw">def</span> <span class="fn">capture_intrusion_image</span>(image_b64: <span class="tp">str</span>, device_id: <span class="tp">str</span>) -> <span class="tp">str</span>:
+    <span class="str">"""Save image on failed attempt for intrusion detection."""</span>
+    <span class="kw">from</span> datetime <span class="kw">import</span> datetime
+    ts  = datetime.utcnow().strftime(<span class="str">"%Y%m%d_%H%M%S"</span>)
+    path = Path(<span class="str">f"intrusions/{device_id}_{ts}.jpg"</span>)
+    path.parent.mkdir(exist_ok=<span class="kw">True</span>)
+    img_data = base64.b64decode(image_b64)
+    path.write_bytes(img_data)
+    <span class="kw">return</span> <span class="fn">str</span>(path)</pre>
+  </div>
+
+  <!-- FastAPI main -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-cyan">⚡</div>main.py — FastAPI App</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>app/main.py</span></div>
+    <pre><span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI
+<span class="kw">from</span> fastapi.middleware.cors <span class="kw">import</span> CORSMiddleware
+<span class="kw">from</span> app.api.router <span class="kw">import</span> api_router
+
+app = FastAPI(
+    title=<span class="str">"Phone Lock System API"</span>,
+    version=<span class="str">"3.0.0"</span>,
+    docs_url=<span class="str">"/docs"</span>
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[<span class="str">"*"</span>], allow_methods=[<span class="str">"*"</span>], allow_headers=[<span class="str">"*"</span>]
+)
+app.include_router(api_router, prefix=<span class="str">"/api/v1"</span>)
+
+<span class="cm"># Auth endpoint example</span>
+<span class="kw">from</span> fastapi <span class="kw">import</span> Depends, HTTPException
+<span class="kw">from</span> app.core.jwt_handler <span class="kw">import</span> create_access_token, create_refresh_token
+<span class="kw">from</span> app.core.otp_handler <span class="kw">import</span> verify_otp
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel
+
+<span class="kw">class</span> <span class="tp">UnlockRequest</span>(BaseModel):
+    device_id : <span class="tp">str</span>
+    pin       : <span class="tp">str</span>
+    otp       : <span class="tp">str</span> | <span class="kw">None</span> = <span class="kw">None</span>
+
+<span class="nm">@app.post</span>(<span class="str">"/api/v1/auth/unlock"</span>)
+<span class="kw">async def</span> <span class="fn">unlock_device</span>(req: <span class="tp">UnlockRequest</span>):
+    <span class="cm"># 1. Verify PIN (uses bcrypt under the hood)</span>
+    pin_ok = <span class="kw">await</span> <span class="fn">verify_pin_async</span>(req.device_id, req.pin)
+    <span class="kw">if not</span> pin_ok:
+        <span class="kw">raise</span> HTTPException(<span class="nm">401</span>, <span class="str">"Invalid PIN"</span>)
+
+    <span class="cm"># 2. If 2FA enabled, verify OTP</span>
+    <span class="kw">if</span> req.otp:
+        secret = <span class="kw">await</span> <span class="fn">get_totp_secret</span>(req.device_id)
+        <span class="kw">if not</span> <span class="fn">verify_otp</span>(secret, req.otp):
+            <span class="kw">raise</span> HTTPException(<span class="nm">401</span>, <span class="str">"Invalid OTP"</span>)
+
+    <span class="cm"># 3. Return JWT pair</span>
+    <span class="kw">return</span> {
+        <span class="str">"access_token"</span> : <span class="fn">create_access_token</span>(req.device_id),
+        <span class="str">"refresh_token"</span>: <span class="fn">create_refresh_token</span>(req.device_id),
+        <span class="str">"token_type"</span>   : <span class="str">"bearer"</span>
+    }</pre>
+  </div>
+
+  <!-- Docker Compose -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-cyan">🐋</div>docker-compose.yml</div>
+    <div class="code-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>docker-compose.yml</span></div>
+    <pre><span class="kw">version</span>: <span class="str">'3.9'</span>
+<span class="kw">services</span>:
+  <span class="fn">api</span>:
+    build: .
+    ports: [<span class="str">"8000:8000"</span>]
+    environment:
+      DATABASE_URL: <span class="str">postgresql://user:pass@db:5432/phonelock</span>
+      REDIS_URL: <span class="str">redis://redis:6379</span>
+      JWT_SECRET: <span class="str">your-super-secret-key</span>
+    depends_on: [db, redis]
+
+  <span class="fn">db</span>:
+    image: <span class="str">postgres:15-alpine</span>
+    environment: { POSTGRES_DB: phonelock, POSTGRES_PASSWORD: pass }
+    volumes: [pgdata:/var/lib/postgresql/data]
+
+  <span class="fn">redis</span>:
+    image: <span class="str">redis:7-alpine</span>
+
+  <span class="fn">grafana</span>:
+    image: <span class="str">grafana/grafana</span>
+    ports: [<span class="str">"3000:3000"</span>]
+
+<span class="kw">volumes</span>:
+  pgdata:</pre>
+  </div>
+</div>
+
+<!-- ===================== SYSTEM DESIGN ===================== -->
+<div id="sysdesign" class="section">
+  <div class="sec-header">
+    <div class="sec-tag">// section 05</div>
+    <div class="sec-title">System Design</div>
+    <div class="sec-desc">Architecture diagram, data flow, security considerations, and scalability path.</div>
+  </div>
+
+  <!-- Architecture Diagram -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-cyan">⬡</div>Full System Architecture</div>
+    <div class="arch" style="margin-top:12px">
+      <!-- Client Layer -->
+      <div style="text-align:center;color:var(--text3);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px">CLIENT LAYER</div>
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:rgba(6,182,212,0.4);color:var(--cyan);background:rgba(6,182,212,0.05)">Mobile App<br><span style="font-size:10px;color:var(--text3)">React Native / Flutter</span></div>
+        <div class="arch-box" style="border-color:rgba(6,182,212,0.4);color:var(--cyan);background:rgba(6,182,212,0.05)">Web UI<br><span style="font-size:10px;color:var(--text3)">React Dashboard</span></div>
+        <div class="arch-box" style="border-color:rgba(6,182,212,0.4);color:var(--cyan);background:rgba(6,182,212,0.05)">CLI Tool<br><span style="font-size:10px;color:var(--text3)">Python admin CLI</span></div>
+      </div>
+      <div style="text-align:center;color:var(--text3);font-size:12px;margin:8px 0">↓ HTTPS / JWT Bearer ↓</div>
+      <!-- Gateway -->
+      <div style="text-align:center;color:var(--text3);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px">API GATEWAY</div>
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:rgba(245,158,11,0.4);color:var(--amber2);background:rgba(245,158,11,0.05);min-width:300px">Nginx + Rate Limiting<br><span style="font-size:10px;color:var(--text3)">100 req/min per IP — blocks brute force at network level</span></div>
+      </div>
+      <div style="text-align:center;color:var(--text3);font-size:12px;margin:8px 0">↓</div>
+      <!-- Services -->
+      <div style="text-align:center;color:var(--text3);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px">SERVICE LAYER</div>
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:rgba(0,255,136,0.3);color:var(--green);background:rgba(0,255,136,0.04)">FastAPI Auth<br><span style="font-size:10px;color:var(--text3)">PIN + OTP + JWT</span></div>
+        <div class="arch-box" style="border-color:rgba(139,92,246,0.3);color:var(--purple);background:rgba(139,92,246,0.04)">Biometric Service<br><span style="font-size:10px;color:var(--text3)">OpenCV face detect</span></div>
+        <div class="arch-box" style="border-color:rgba(59,130,246,0.3);color:var(--blue2);background:rgba(59,130,246,0.04)">Analytics Service<br><span style="font-size:10px;color:var(--text3)">Login trends</span></div>
+      </div>
+      <div style="text-align:center;color:var(--text3);font-size:12px;margin:8px 0">↓</div>
+      <!-- Data Layer -->
+      <div style="text-align:center;color:var(--text3);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px">DATA LAYER</div>
+      <div class="arch-row">
+        <div class="arch-box" style="border-color:rgba(59,130,246,0.3);color:var(--blue2);background:rgba(59,130,246,0.04)">PostgreSQL<br><span style="font-size:10px;color:var(--text3)">Users, history, devices</span></div>
+        <div class="arch-box" style="border-color:rgba(239,68,68,0.3);color:#fca5a5;background:rgba(239,68,68,0.04)">Redis<br><span style="font-size:10px;color:var(--text3)">Lockout state, sessions</span></div>
+        <div class="arch-box" style="border-color:rgba(245,158,11,0.3);color:var(--amber2);background:rgba(245,158,11,0.04)">S3 / Storage<br><span style="font-size:10px;color:var(--text3)">Intrusion images</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Flow -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-green">⟶</div>Authentication Data Flow</div>
+    <div class="progress-path" style="margin-top:8px">
+      <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);color:var(--green)">1</div><div class="prog-vert"></div></div><div class="prog-content"><h4>User submits PIN (+ optional OTP)</h4><p>POST /api/v1/auth/unlock with {device_id, pin, otp}</p></div></div>
+      <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:var(--amber2)">2</div><div class="prog-vert"></div></div><div class="prog-content"><h4>Nginx rate limit check</h4><p>Max 10 requests/min per IP/device. Blocks at network layer.</p></div></div>
+      <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--blue2)">3</div><div class="prog-vert"></div></div><div class="prog-content"><h4>Redis lockout check</h4><p>Check if device_id is in Redis lockout set. Return 429 if locked.</p></div></div>
+      <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);color:var(--purple)">4</div><div class="prog-vert"></div></div><div class="prog-content"><h4>bcrypt PIN verification</h4><p>Hash input PIN and compare against stored hash in PostgreSQL.</p></div></div>
+      <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:var(--cyan)">5</div><div class="prog-vert"></div></div><div class="prog-content"><h4>TOTP 2FA verification (if enabled)</h4><p>Validate 6-digit time-based OTP using pyotp. Window ±30s.</p></div></div>
+      <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);color:var(--green)">6</div><div class="prog-vert"></div></div><div class="prog-content"><h4>Issue JWT tokens + log event</h4><p>Return access_token (15min) + refresh_token (7d). Write to LoginHistory.</p></div></div>
+      <div class="prog-item"><div class="prog-line"><div class="prog-circle" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5">✗</div></div><div class="prog-content"><h4>On failure: increment counter + capture image</h4><p>Update attempt counter in Redis. If ≥5 fails, trigger lockout. If camera enabled, save intrusion image.</p></div></div>
+    </div>
+  </div>
+
+  <!-- Security Considerations -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-red">🛡</div>Security Considerations</div>
+    <div class="grid2" style="margin-top:8px">
+      <div>
+        <div style="color:var(--green);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">What We Do Right</div>
+        <ul class="checklist">
+          <li>bcrypt with cost factor 12 — brute force resistant</li>
+          <li>JWT with short expiry (15 min access token)</li>
+          <li>Progressive lockout — slows attackers exponentially</li>
+          <li>Rate limiting at Nginx layer</li>
+          <li>TOTP 2FA adds second factor</li>
+          <li>Intrusion image capture on failure</li>
+          <li>Parameterized queries via SQLAlchemy (no SQL injection)</li>
+          <li>HTTPS only in production</li>
+        </ul>
+      </div>
+      <div>
+        <div style="color:var(--amber2);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Common Vulnerabilities to Know</div>
+        <ul class="checklist">
+          <li>Timing attacks on string comparison — use hmac.compare_digest</li>
+          <li>JWT secret leakage — rotate regularly, use env vars</li>
+          <li>PIN reuse across devices — add device-specific salt</li>
+          <li>Replay attacks on OTP — check used OTPs in Redis</li>
+          <li>Side-channel in bcrypt — use constant-time comparison</li>
+          <li>CSRF on web endpoints — use SameSite cookies</li>
+          <li>Insecure intrusion image storage — encrypt at rest</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scalability -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-blue">📈</div>Scalability Path</div>
+    <div class="grid3" style="margin-top:8px">
+      <div style="background:#0f1218;border:1px solid var(--border2);border-radius:10px;padding:16px">
+        <div style="color:var(--green);font-size:12px;font-weight:600;margin-bottom:8px">MVP (1K devices)</div>
+        <ul class="checklist" style="font-size:12px">
+          <li>Single FastAPI + SQLite</li>
+          <li>Redis on same machine</li>
+          <li>Basic monitoring</li>
+        </ul>
+      </div>
+      <div style="background:#0f1218;border:1px solid var(--border2);border-radius:10px;padding:16px">
+        <div style="color:var(--amber2);font-size:12px;font-weight:600;margin-bottom:8px">Scale (100K devices)</div>
+        <ul class="checklist" style="font-size:12px">
+          <li>PostgreSQL + read replicas</li>
+          <li>Redis Cluster for lockouts</li>
+          <li>Multiple FastAPI instances</li>
+          <li>Kafka for event streaming</li>
+        </ul>
+      </div>
+      <div style="background:#0f1218;border:1px solid var(--border2);border-radius:10px;padding:16px">
+        <div style="color:var(--blue2);font-size:12px;font-weight:600;margin-bottom:8px">Enterprise (10M+)</div>
+        <ul class="checklist" style="font-size:12px">
+          <li>Microservices per feature</li>
+          <li>AWS RDS + ElastiCache</li>
+          <li>S3 for biometric storage</li>
+          <li>Kubernetes + HPA</li>
+          <li>HSM for key management</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DB SCHEMA ===================== -->
+<div id="dbschema" class="section">
+  <div class="sec-header">
+    <div class="sec-tag">// section 06</div>
+    <div class="sec-title">Database Schema</div>
+    <div class="sec-desc">Complete PostgreSQL schema — devices, login history, biometric profiles, OTP secrets, and audit logs.</div>
+  </div>
+
+  <!-- devices -->
+  <div class="schema-table">
+    <div class="schema-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>TABLE:</span> devices</div>
+    <div class="schema-row"><div class="schema-col schema-field">id</div><div class="schema-col schema-type">UUID (PK)</div><div class="schema-col schema-note">Primary key</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">device_id</div><div class="schema-col schema-type">VARCHAR(64)</div><div class="schema-col schema-note">UNIQUE — hardware fingerprint</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">pin_hash</div><div class="schema-col schema-type">VARCHAR(256)</div><div class="schema-col schema-note">bcrypt hash (includes salt)</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">attempts</div><div class="schema-col schema-type">INTEGER</div><div class="schema-col schema-note">DEFAULT 0 — failed attempts</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">locked_until</div><div class="schema-col schema-type">TIMESTAMP</div><div class="schema-col schema-note">NULL = not locked</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">is_2fa_enabled</div><div class="schema-col schema-type">BOOLEAN</div><div class="schema-col schema-note">DEFAULT false</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">totp_secret</div><div class="schema-col schema-type">VARCHAR(64)</div><div class="schema-col schema-note">Encrypted TOTP secret</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">created_at</div><div class="schema-col schema-type">TIMESTAMP</div><div class="schema-col schema-note">DEFAULT NOW()</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">last_unlock</div><div class="schema-col schema-type">TIMESTAMP</div><div class="schema-col schema-note">Last successful auth</div></div>
+  </div>
+
+  <!-- login_history -->
+  <div class="schema-table">
+    <div class="schema-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>TABLE:</span> login_history</div>
+    <div class="schema-row"><div class="schema-col schema-field">id</div><div class="schema-col schema-type">BIGINT (PK)</div><div class="schema-col schema-note">Auto-increment</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">device_id</div><div class="schema-col schema-type">VARCHAR(64) (FK)</div><div class="schema-col schema-note">→ devices.device_id</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">timestamp</div><div class="schema-col schema-type">TIMESTAMP</div><div class="schema-col schema-note">DEFAULT NOW(), indexed</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">success</div><div class="schema-col schema-type">BOOLEAN</div><div class="schema-col schema-note">true = unlocked</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">method</div><div class="schema-col schema-type">VARCHAR(20)</div><div class="schema-col schema-note">PIN / BIOMETRIC / OTP</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">ip_address</div><div class="schema-col schema-type">INET</div><div class="schema-col schema-note">Requester IP</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">intrusion_img</div><div class="schema-col schema-type">TEXT</div><div class="schema-col schema-note">S3 URL on failure</div></div>
+  </div>
+
+  <!-- biometric_profiles -->
+  <div class="schema-table">
+    <div class="schema-header"><div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div><span>TABLE:</span> biometric_profiles</div>
+    <div class="schema-row"><div class="schema-col schema-field">id</div><div class="schema-col schema-type">UUID (PK)</div><div class="schema-col schema-note"></div></div>
+    <div class="schema-row"><div class="schema-col schema-field">device_id</div><div class="schema-col schema-type">VARCHAR(64) (FK)</div><div class="schema-col schema-note">One device, one profile</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">template_hash</div><div class="schema-col schema-type">BYTEA</div><div class="schema-col schema-note">Encrypted biometric template</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">type</div><div class="schema-col schema-type">VARCHAR(20)</div><div class="schema-col schema-note">FACE / FINGERPRINT</div></div>
+    <div class="schema-row"><div class="schema-col schema-field">enrolled_at</div><div class="schema-col schema-type">TIMESTAMP</div><div class="schema-col schema-note"></div></div>
+  </div>
+
+  <!-- SQL -->
+  <div class="card" style="margin-top:20px">
+    <div class="card-title"><div class="icon icon-blue">🗄</div>Key Indexes for Performance</div>
+    <pre><span class="cm">-- Indexes for fast queries</span>
+<span class="kw">CREATE</span> INDEX idx_login_device_ts
+  <span class="kw">ON</span> login_history (device_id, timestamp DESC);
+
+<span class="kw">CREATE</span> INDEX idx_login_success
+  <span class="kw">ON</span> login_history (device_id, success)
+  <span class="kw">WHERE</span> success = <span class="kw">FALSE</span>;   <span class="cm">-- Partial index for failures only</span>
+
+<span class="kw">CREATE</span> UNIQUE INDEX idx_devices_device_id
+  <span class="kw">ON</span> devices (device_id);</pre>
+  </div>
+</div>
+
+<!-- ===================== API ===================== -->
+<div id="api" class="section">
+  <div class="sec-header">
+    <div class="sec-tag">// section 07</div>
+    <div class="sec-title">API Design</div>
+    <div class="sec-desc">Complete FastAPI endpoint reference with request/response shapes, auth requirements, and rate limits.</div>
+  </div>
+
+  <!-- Tech Stack Table -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-title"><div class="icon icon-amber">⚙</div>Tech Stack Summary</div>
+    <table class="tech-table">
+      <tr><th>Layer</th><th>Technology</th><th>Why</th></tr>
+      <tr><td><span class="badge badge-blue">API</span></td><td style="color:#fff">FastAPI</td><td>Async, OpenAPI auto-docs, Pydantic validation</td></tr>
+      <tr><td><span class="badge badge-green">Hashing</span></td><td style="color:#fff">bcrypt (cost=12)</td><td>Industry standard, adaptive, auto-salted</td></tr>
+      <tr><td><span class="badge badge-blue">Auth</span></td><td style="color:#fff">python-jose (JWT)</td><td>Access + Refresh token pattern</td></tr>
+      <tr><td><span class="badge badge-amber">2FA</span></td><td style="color:#fff">pyotp</td><td>TOTP — compatible with Google Authenticator</td></tr>
+      <tr><td><span class="badge badge-purple">Biometrics</span></td><td style="color:#fff">OpenCV (cv2)</td><td>Haar Cascade for face detection simulation</td></tr>
+      <tr><td><span class="badge badge-blue">Database</span></td><td style="color:#fff">PostgreSQL + SQLAlchemy</td><td>Relational, ACID, async support</td></tr>
+      <tr><td><span class="badge badge-red">Cache</span></td><td style="color:#fff">Redis</td><td>Lockout state, rate limit counters, sessions</td></tr>
+      <tr><td><span class="badge badge-green">Migrations</span></td><td style="color:#fff">Alembic</td><td>Version-controlled schema changes</td></tr>
+      <tr><td><span class="badge badge-purple">Containers</span></td><td style="color:#fff">Docker + Docker Compose</td><td>Reproducible dev/prod environment</td></tr>
+      <tr><td><span class="badge badge-blue">Monitoring</span></td><td style="color:#fff">Grafana + Prometheus</td><td>Real-time dashboard for failed attempts</td></tr>
+      <tr><td><span class="badge badge-amber">Testing</span></td><td style="color:#fff">pytest + httpx</td><td>Async FastAPI test client</td></tr>
+    </table>
+  </div>
+
+  <!-- Endpoints -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-green">⚡</div>API Endpoints Reference</div>
+    <div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-top:8px">
+      <div style="background:#0f1218;padding:8px 16px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border2);text-transform:uppercase;letter-spacing:0.1em">Authentication</div>
+      <div class="api-row"><span class="api-method method-post">POST</span><span class="api-path">/api/v1/auth/setup</span><span class="api-desc">Register device + set PIN</span></div>
+      <div class="api-row"><span class="api-method method-post">POST</span><span class="api-path">/api/v1/auth/unlock</span><span class="api-desc">Verify PIN + OTP, get JWT</span></div>
+      <div class="api-row"><span class="api-method method-post">POST</span><span class="api-path">/api/v1/auth/refresh</span><span class="api-desc">Exchange refresh for new access</span></div>
+      <div class="api-row"><span class="api-method method-post">POST</span><span class="api-path">/api/v1/auth/logout</span><span class="api-desc">Blacklist refresh token in Redis</span></div>
+      <div class="api-row"><span class="api-method method-put">PUT</span><span class="api-path">/api/v1/auth/change-pin</span><span class="api-desc">Change PIN (requires old PIN)</span></div>
+    </div>
+    <div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-top:12px">
+      <div style="background:#0f1218;padding:8px 16px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border2);text-transform:uppercase;letter-spacing:0.1em">2FA / OTP</div>
+      <div class="api-row"><span class="api-method method-post">POST</span><span class="api-path">/api/v1/auth/2fa/enable</span><span class="api-desc">Generate TOTP secret + QR code</span></div>
+      <div class="api-row"><span class="api-method method-post">POST</span><span class="api-path">/api/v1/auth/2fa/verify</span><span class="api-desc">Confirm OTP to activate 2FA</span></div>
+      <div class="api-row"><span class="api-method method-post">POST</span><span class="api-path">/api/v1/auth/2fa/disable</span><span class="api-desc">Disable 2FA (PIN required)</span></div>
+    </div>
+    <div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-top:12px">
+      <div style="background:#0f1218;padding:8px 16px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border2);text-transform:uppercase;letter-spacing:0.1em">Biometrics</div>
+      <div class="api-row"><span class="api-method method-post">POST</span><span class="api-path">/api/v1/biometric/enroll</span><span class="api-desc">Enroll face image (base64)</span></div>
+      <div class="api-row"><span class="api-method method-post">POST</span><span class="api-path">/api/v1/biometric/verify</span><span class="api-desc">Verify face → returns JWT</span></div>
+    </div>
+    <div style="border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-top:12px">
+      <div style="background:#0f1218;padding:8px 16px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border2);text-transform:uppercase;letter-spacing:0.1em">Analytics (requires admin JWT)</div>
+      <div class="api-row"><span class="api-method method-get">GET</span><span class="api-path">/api/v1/analytics/history</span><span class="api-desc">Login history with filters</span></div>
+      <div class="api-row"><span class="api-method method-get">GET</span><span class="api-path">/api/v1/analytics/intrusions</span><span class="api-desc">Failed attempts + images</span></div>
+      <div class="api-row"><span class="api-method method-get">GET</span><span class="api-path">/api/v1/analytics/stats</span><span class="api-desc">Aggregate stats per device</span></div>
+    </div>
+  </div>
+
+  <!-- Response Shape -->
+  <div class="card">
+    <div class="card-title"><div class="icon icon-blue">⟵</div>Response Shapes</div>
+    <div class="grid2" style="margin-top:8px">
+      <div>
+        <div style="font-size:11px;color:var(--green);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">Success: POST /auth/unlock</div>
+        <pre style="font-size:11.5px">{
+  <span class="str">"access_token"</span>:  <span class="str">"eyJ..."</span>,
+  <span class="str">"refresh_token"</span>: <span class="str">"eyJ..."</span>,
+  <span class="str">"token_type"</span>:    <span class="str">"bearer"</span>,
+  <span class="str">"expires_in"</span>:    <span class="nm">900</span>
+}</pre>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--red);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em">Error: Too many attempts</div>
+        <pre style="font-size:11.5px">{
+  <span class="str">"detail"</span>:   <span class="str">"Too many attempts"</span>,
+  <span class="str">"locked"</span>:   <span class="kw">true</span>,
+  <span class="str">"retry_in"</span>: <span class="nm">1800</span>,
+  <span class="str">"code"</span>:     <span class="str">"DEVICE_LOCKED"</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== INTERVIEW ===================== -->
+<div id="interview" class="section">
+  <div class="sec-header">
+    <div class="sec-tag">// section 08</div>
+    <div class="sec-title">Interview Preparation</div>
+    <div class="sec-desc">Common interview questions with strong answers. How to explain this project confidently in any technical interview.</div>
+  </div>
+
+  <!-- How to introduce -->
+  <div class="card" style="margin-bottom:24px;border-color:rgba(0,255,136,0.2)">
+    <div class="card-title"><div class="icon icon-green">💬</div>How to Introduce This Project in 60 Seconds</div>
+    <div style="background:#090b0f;border:1px solid var(--border2);border-radius:8px;padding:20px;margin-top:8px">
+      <p style="color:var(--text2);line-height:1.9;font-size:13px">"I built a <span style="color:var(--green)">Phone Lock System Simulation</span> in three progressive levels. The foundation is a PIN authentication system using <span style="color:var(--amber2)">bcrypt hashing with progressive lockout</span> — similar to how real mobile OS security works. In the intermediate level I added <span style="color:var(--blue2)">SQLite/PostgreSQL storage, login history, and a Flask-based UI</span>. At the advanced level, I built a <span style="color:var(--purple)">FastAPI REST API with JWT access+refresh tokens, TOTP-based 2FA, biometric face detection using OpenCV, and an analytics dashboard</span>. The system includes intrusion detection — it captures an image on repeated failures. The whole stack runs on Docker Compose with PostgreSQL and Redis. This project helped me understand security fundamentals like why we never store plain passwords, how lockout prevents brute force, and how multi-factor auth adds defense in depth."</p>
+    </div>
+  </div>
+
+  <!-- Q&A -->
+  <div style="margin-bottom:8px;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:0.1em">Common Interview Questions</div>
+
+  <details class="q-card">
+    <summary><span class="q-num">Q1</span>Why do we hash passwords/PINs instead of encrypting them?<span class="q-toggle">›</span></summary>
+    <div class="q-body">
+      <p>Encryption is reversible — if someone gets the key, they can decrypt all passwords. Hashing is a one-way function. We don't need to know the original PIN, we only need to verify it matches. When a user enters their PIN, we hash the input and compare hashes. bcrypt is ideal because it's deliberately slow (adaptive cost factor), has built-in salting to prevent rainbow table attacks, and the cost can be increased as hardware improves without changing existing hashes.</p>
+      <p style="margin-top:10px">Key point: <span style="color:var(--green)">NEVER use MD5 or SHA-1 for passwords</span> — they're too fast, making brute force trivial.</p>
+    </div>
+  </details>
+
+  <details class="q-card">
+    <summary><span class="q-num">Q2</span>What is the difference between Access Token and Refresh Token?<span class="q-toggle">›</span></summary>
+    <div class="q-body">
+      <p><strong style="color:#fff">Access Token:</strong> Short-lived (15 minutes). Sent with every API request. If stolen, damage is limited to 15 minutes. Stored in memory (not localStorage).</p>
+      <p style="margin-top:8px"><strong style="color:#fff">Refresh Token:</strong> Long-lived (7 days). Only sent to /auth/refresh endpoint. Stored in HttpOnly cookie. Used to get a new access token silently when it expires.</p>
+      <p style="margin-top:8px"><strong style="color:#fff">Why two tokens?</strong> Pure UX + security balance. You don't want users to log in every 15 minutes (bad UX), but you don't want a stolen token to last 7 days (bad security). The refresh token narrows the attack surface to a single endpoint.</p>
+    </div>
+  </details>
+
+  <details class="q-card">
+    <summary><span class="q-num">Q3</span>How does your lockout system prevent brute force attacks?<span class="q-toggle">›</span></summary>
+    <div class="q-body">
+      <p>Three-layer defense:</p>
+      <p style="margin-top:8px"><span style="color:var(--amber2)">1. Progressive lockout</span> — after 5 fails: 30s, then 5min, 30min, 1h, 24h. An attacker trying 1000 PINs would need weeks due to exponential delays.</p>
+      <p style="margin-top:6px"><span style="color:var(--blue2)">2. Nginx rate limiting</span> — blocks more than 10 requests/min per IP at the network layer, before reaching application code.</p>
+      <p style="margin-top:6px"><span style="color:var(--green)">3. bcrypt cost factor</span> — even if the hash leaks, cracking a single PIN takes seconds per attempt vs. microseconds with MD5. 100 rounds of bcrypt ≈ 300ms per hash.</p>
+    </div>
+  </details>
+
+  <details class="q-card">
+    <summary><span class="q-num">Q4</span>How does TOTP (Time-based OTP) work?<span class="q-toggle">›</span></summary>
+    <div class="q-body">
+      <p>TOTP is defined in RFC 6238. Both the server and the user's phone share a secret key. Every 30 seconds, a new 6-digit code is computed as: <code style="color:var(--green)">TOTP = HOTP(secret, floor(time/30))</code> where HOTP is HMAC-SHA1.</p>
+      <p style="margin-top:8px">Since both sides know the secret and the current time, they independently compute the same code. No network exchange needed. The <span style="color:var(--amber2)">valid_window=1</span> in pyotp allows ±30 seconds for clock drift.</p>
+      <p style="margin-top:8px">Important: each OTP must be marked as used in Redis to prevent replay attacks within the 30-second window.</p>
+    </div>
+  </details>
+
+  <details class="q-card">
+    <summary><span class="q-num">Q5</span>How does your biometric simulation work and how does real biometrics differ?<span class="q-toggle">›</span></summary>
+    <div class="q-body">
+      <p><strong style="color:#fff">Our simulation</strong> uses OpenCV's Haar Cascade classifier (machine learning-based pattern detection) to detect faces in a base64-encoded image. It returns a boolean + confidence score, which we treat as "authenticated".</p>
+      <p style="margin-top:8px"><strong style="color:#fff">Real biometrics (Face ID):</strong> Uses a structured light projector to create a 3D depth map of 30,000 points. A neural network converts this to a mathematical template. Authentication compares templates using Euclidean distance or cosine similarity — never comparing raw images. The template never leaves the Secure Enclave chip.</p>
+      <p style="margin-top:8px"><strong style="color:#fff">Key difference:</strong> We simulate the flow (capture → detect → authenticate), not the cryptographic security of real biometric systems.</p>
+    </div>
+  </details>
+
+  <details class="q-card">
+    <summary><span class="q-num">Q6</span>Why use Redis for lockout state instead of PostgreSQL?<span class="q-toggle">›</span></summary>
+    <div class="q-body">
+      <p>Lockout state needs to be checked on every authentication request — potentially thousands per second at scale. Redis is an in-memory store with O(1) GET/SET and sub-millisecond latency vs. PostgreSQL's 1–5ms network round-trip per query.</p>
+      <p style="margin-top:8px">Redis also has built-in TTL (expiry), perfect for: <code style="color:var(--green)">SET lockout:device123 1 EX 1800</code> — automatically expires after 30 minutes, no cleanup job needed.</p>
+      <p style="margin-top:8px">PostgreSQL is still the source of truth — Redis is the performance layer.</p>
+    </div>
+  </details>
+
+  <details class="q-card">
+    <summary><span class="q-num">Q7</span>What design patterns did you use in this project?<span class="q-toggle">›</span></summary>
+    <div class="q-body">
+      <ul class="checklist" style="margin-top:4px">
+        <li><strong style="color:#fff">Repository pattern</strong> — data access logic separated from business logic (DB queries in models/db layer)</li>
+        <li><strong style="color:#fff">Strategy pattern</strong> — authentication method is pluggable: PIN, Biometric, OTP each implement a common interface</li>
+        <li><strong style="color:#fff">Dependency Injection</strong> — FastAPI's Depends() for DB sessions and current user extraction</li>
+        <li><strong style="color:#fff">Factory pattern</strong> — Flask/FastAPI app factory for testing with different configs</li>
+        <li><strong style="color:#fff">Observer pattern</strong> — login events trigger side effects (logging, intrusion capture) decoupled from auth logic</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="q-card">
+    <summary><span class="q-num">Q8</span>How would you scale this system to 10 million devices?<span class="q-toggle">›</span></summary>
+    <div class="q-body">
+      <ul class="checklist" style="margin-top:4px">
+        <li>Horizontal scaling of FastAPI with Kubernetes + HPA (auto-scale on CPU/RPS)</li>
+        <li>PostgreSQL read replicas for analytics queries — write to primary, read from replicas</li>
+        <li>Redis Cluster for distributed lockout state across multiple Redis nodes</li>
+        <li>Kafka/SQS for async event processing — login events → analytics pipeline</li>
+        <li>CDN + S3 for intrusion image storage (pre-signed URLs)</li>
+        <li>Database sharding by device_id if PostgreSQL hits limits</li>
+        <li>HSM (Hardware Security Module) for production key management instead of env vars</li>
+        <li>Migrate bcrypt to Argon2id — better memory-hard, recommended by OWASP</li>
+      </ul>
+    </div>
+  </details>
+
+  <!-- Final Tip -->
+  <div class="card" style="border-color:rgba(59,130,246,0.2);margin-top:24px">
+    <div class="card-title"><div class="icon icon-blue">💡</div>Pro Interview Tips</div>
+    <div class="grid2" style="margin-top:8px">
+      <div>
+        <div style="color:var(--blue2);font-size:11px;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Do this</div>
+        <ul class="checklist" style="font-size:13px">
+          <li>Mention security at every level — it shows maturity</li>
+          <li>Talk about what you'd do differently / improve</li>
+          <li>Draw the architecture on the whiteboard proactively</li>
+          <li>Mention the tradeoffs: bcrypt speed vs. security</li>
+          <li>Show login history UI — visible working product</li>
+          <li>Mention you know about Argon2id as bcrypt successor</li>
+        </ul>
+      </div>
+      <div>
+        <div style="color:var(--red);font-size:11px;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Avoid this</div>
+        <ul class="checklist" style="font-size:13px">
+          <li>Never say "I used JWT because it's popular"</li>
+          <li>Don't confuse hashing with encryption</li>
+          <li>Don't say the biometric is production-grade</li>
+          <li>Don't skip security considerations section</li>
+          <li>Avoid vague answers about scalability</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .main -->
+
+<script>
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ========= SIM TABS =========
+function switchSim(name) {
+  ['pin','pat','fp'].forEach(n => {
+    document.getElementById('sim-'+n).style.display = n===name ? 'block' : 'none';
+    document.getElementById('exp-'+n).style.display = n===name ? 'block' : 'none';
+    const btn = document.getElementById('stab-'+n);
+    if(n===name){
+      btn.style.background='rgba(0,255,136,0.1)';
+      btn.style.borderColor='rgba(0,255,136,0.3)';
+      btn.style.color='var(--green)';
+    } else {
+      btn.style.background='var(--surface)';
+      btn.style.borderColor='var(--border2)';
+      btn.style.color='var(--text3)';
+    }
+  });
+  if(name==='pat') setTimeout(initPattern,50);
+  if(name==='fp')  initFP();
+}
+
+// ========= PIN SIMULATOR =========
+let pEntered='', pAttempts=0, pLocked=false, pLockTimer=null;
+function pPin(k){
+  if(pLocked||!k) return;
+  if(pEntered.length>=4) return;
+  pEntered+=k; pUpdateDots();
+  if(pEntered.length===4) setTimeout(pCheck,220);
+}
+function pPinDel(){ if(pLocked) return; pEntered=pEntered.slice(0,-1); pUpdateDots(); pSetStatus('Enter PIN · correct is <span style="color:var(--green)">1234</span>',''); }
+function pPinReset(){ pEntered=''; pUpdateDots(); pSetStatus('Enter PIN · correct is <span style="color:var(--green)">1234</span>',''); }
+function pUpdateDots(mode){
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('pd'+i);
+    d.classList.remove('filled','error');
+    if(mode==='error'){ if(i<pEntered.length) d.classList.add('error'); }
+    else { if(i<pEntered.length) d.classList.add('filled'); }
+  }
+}
+function pSetStatus(msg,cls){
+  const el=document.getElementById('p-status');
+  el.innerHTML=msg; el.className='pin-status '+(cls||'');
+}
+function pUpdateAttempts(){
+  for(let i=0;i<5;i++) document.getElementById('pa'+i).classList.toggle('used',i<pAttempts);
+}
+function pShake(){
+  const g=document.getElementById('p-grid');
+  g.style.transform='translateX(-7px)';
+  setTimeout(()=>{g.style.transform='translateX(7px)';},80);
+  setTimeout(()=>{g.style.transform='translateX(-3px)';},160);
+  setTimeout(()=>{g.style.transform='';},240);
+}
+function pCheck(){
+  if(pEntered==='1234'){
+    pSetStatus('✔ Unlocked!','ok'); pUpdateDots('filled');
+    pAttempts=0; pUpdateAttempts();
+    setTimeout(()=>{ pEntered=''; pUpdateDots(); pSetStatus('Enter PIN · correct is <span style="color:var(--green)">1234</span>',''); },2200);
+  } else {
+    pAttempts++; pUpdateAttempts(); pUpdateDots('error'); pShake();
+    if(pAttempts>=5){
+      pLocked=true; let s=30;
+      pSetStatus(`🔒 Locked — ${s}s`,'err');
+      document.getElementById('p-grid').style.opacity='0.35';
+      pLockTimer=setInterval(()=>{ s--; if(s<=0){ clearInterval(pLockTimer); pLocked=false; pAttempts=0; pUpdateAttempts(); pSetStatus('Enter PIN · correct is <span style="color:var(--green)">1234</span>',''); document.getElementById('p-grid').style.opacity='1'; } else pSetStatus(`🔒 Locked — ${s}s`,'err'); },1000);
+    } else { pSetStatus(`❌ Wrong · ${5-pAttempts} left`,'err'); }
+    setTimeout(()=>{ pEntered=''; pUpdateDots(); },700);
+  }
+}
+
+// ========= PATTERN SIMULATOR =========
+const PAT_CORRECT = [0,3,6,7,8]; // L-shape: 1→4→7→8→9
+let patCanvas, patCtx, patDrawing=false, patNodes=[], patPath=[], patDone=false, patAttempts=0;
+const NODE_POS = [
+  [32,32],[97,32],[162,32],
+  [32,97],[97,97],[162,97],
+  [32,162],[97,162],[162,162]
+];
+function initPattern(){
+  patCanvas=document.getElementById('patCanvas');
+  if(!patCanvas) return;
+  patCtx=patCanvas.getContext('2d');
+  patDrawGrid();
+  patCanvas.onmousedown=patCanvas.ontouchstart=patStartDraw;
+  patCanvas.onmousemove=patCanvas.ontouchmove=patMoveDraw;
+  patCanvas.onmouseup=patCanvas.ontouchend=patEndDraw;
+}
+function patDrawGrid(){
+  const c=patCtx, W=194;
+  c.clearRect(0,0,W,W);
+  // lines
+  c.strokeStyle='rgba(0,255,136,0.12)'; c.lineWidth=1.5; c.setLineDash([4,4]);
+  for(let r=0;r<3;r++) for(let col=0;col<3;col++){
+    if(col<2){ c.beginPath();c.moveTo(NODE_POS[r*3+col][0],NODE_POS[r*3+col][1]);c.lineTo(NODE_POS[r*3+col+1][0],NODE_POS[r*3+col+1][1]);c.stroke(); }
+    if(r<2){ c.beginPath();c.moveTo(NODE_POS[r*3+col][0],NODE_POS[r*3+col][1]);c.lineTo(NODE_POS[(r+1)*3+col][0],NODE_POS[(r+1)*3+col][1]);c.stroke(); }
+  }
+  c.setLineDash([]);
+  // draw path
+  if(patPath.length>1){
+    c.beginPath(); c.moveTo(NODE_POS[patPath[0]][0],NODE_POS[patPath[0]][1]);
+    for(let i=1;i<patPath.length;i++) c.lineTo(NODE_POS[patPath[i]][0],NODE_POS[patPath[i]][1]);
+    c.strokeStyle='rgba(0,255,136,0.55)'; c.lineWidth=3; c.stroke();
+  }
+  // nodes
+  for(let i=0;i<9;i++){
+    const [x,y]=NODE_POS[i];
+    const active=patPath.includes(i);
+    c.beginPath(); c.arc(x,y,active?11:8,0,Math.PI*2);
+    c.fillStyle=active?'rgba(0,255,136,0.25)':'rgba(255,255,255,0.05)'; c.fill();
+    c.strokeStyle=active?'var(--green)':'rgba(255,255,255,0.2)'; c.lineWidth=active?2:1; c.stroke();
+    if(active){ c.beginPath(); c.arc(x,y,4,0,Math.PI*2); c.fillStyle='var(--green)'; c.fill(); }
+    else { c.beginPath(); c.arc(x,y,4,0,Math.PI*2); c.fillStyle='rgba(255,255,255,0.4)'; c.fill(); }
+  }
+}
+function patGetNode(x,y){
+  for(let i=0;i<9;i++){
+    const [nx,ny]=NODE_POS[i];
+    if(Math.hypot(x-nx,y-ny)<22) return i;
+  }
+  return -1;
+}
+function patCoords(e){
+  const r=patCanvas.getBoundingClientRect();
+  if(e.touches) return [e.touches[0].clientX-r.left, e.touches[0].clientY-r.top];
+  return [e.clientX-r.left, e.clientY-r.top];
+}
+function patStartDraw(e){
+  if(patDone) return;
+  e.preventDefault(); patDrawing=true; patPath=[];
+  const [x,y]=patCoords(e), n=patGetNode(x,y);
+  if(n>=0) patPath=[n];
+  patDrawGrid();
+}
+function patMoveDraw(e){
+  if(!patDrawing||patDone) return;
+  e.preventDefault();
+  const [x,y]=patCoords(e), n=patGetNode(x,y);
+  if(n>=0 && !patPath.includes(n)){ patPath.push(n); }
+  patDrawGrid();
+  // draw live line to cursor
+  if(patPath.length>0){
+    const last=NODE_POS[patPath[patPath.length-1]];
+    patCtx.beginPath(); patCtx.moveTo(last[0],last[1]); patCtx.lineTo(x,y);
+    patCtx.strokeStyle='rgba(0,255,136,0.3)'; patCtx.lineWidth=2; patCtx.stroke();
+  }
+}
+function patEndDraw(e){
+  if(!patDrawing) return;
+  patDrawing=false; patDone=true;
+  if(patPath.length<4){ document.getElementById('pat-status').innerHTML='<span style="color:var(--amber2)">Connect at least 4 dots</span>'; patDone=false; patPath=[]; patDrawGrid(); return; }
+  const ok=patPath.length===PAT_CORRECT.length && patPath.every((v,i)=>v===PAT_CORRECT[i]);
+  if(ok){ document.getElementById('pat-status').innerHTML='<span style="color:var(--green)">✔ Pattern matched!</span>'; }
+  else { patAttempts++; document.getElementById('pat-status').innerHTML=`<span style="color:var(--red)">✗ Wrong pattern (attempt ${patAttempts})</span>`; }
+  setTimeout(()=>{ patReset(); if(ok) document.getElementById('pat-status').innerHTML='Draw the pattern'; },2000);
+}
+function patReset(){ patPath=[]; patDone=false; patDrawGrid(); document.getElementById('pat-status').innerHTML='Draw pattern · <span style="color:var(--purple)">Try: ↓↓→→</span>'; }
+
+// ========= FINGERPRINT SIMULATOR =========
+let fpHolding=false, fpTimer=null, fpPct=0, fpDone=false;
+const fpPaths=['fp-p1','fp-p2','fp-p3','fp-p4','fp-p5','fp-p6','fp-p7','fp-p8','fp-p9'];
+const fpStepMsgs=['Sensor activated...','Capturing ridge data...','Extracting minutiae points...','Matching template in Secure Enclave...','Verifying threshold (FAR < 0.002%)...'];
+function initFP(){
+  fpReset();
+}
+function fpStart(){
+  if(fpDone) return;
+  fpHolding=true; fpPct=0;
+  document.getElementById('fp-ring').style.borderColor='rgba(0,255,136,0.5)';
+  document.getElementById('fp-ring').style.boxShadow='0 0 20px rgba(0,255,136,0.15)';
+  document.getElementById('fp-status').innerHTML='<span style="color:var(--text2)">Keep holding...</span>';
+  fpAnimate();
+}
+function fpAnimate(){
+  if(!fpHolding||fpDone) return;
+  fpPct=Math.min(fpPct+2,100);
+  document.getElementById('fp-scan-fill').style.width=fpPct+'%';
+  // light up ridges progressively
+  const lit=Math.floor(fpPct/12);
+  fpPaths.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el) el.setAttribute('stroke', i<lit ? '#00ff88' : '#262d40');
+  });
+  const stepIdx=Math.floor(fpPct/22);
+  document.getElementById('fp-steps').textContent=fpStepMsgs[Math.min(stepIdx,fpStepMsgs.length-1)]||'';
+  if(fpPct>=100){
+    fpDone=true;
+    document.getElementById('fp-status').innerHTML='<span style="color:var(--green);font-size:14px">✔ Fingerprint Matched!</span>';
+    document.getElementById('fp-title').innerHTML='<span style="color:var(--green)">Identity Verified</span>';
+    document.getElementById('fp-ring').style.borderColor='var(--green)';
+    document.getElementById('fp-steps').textContent='🔐 Cryptographic key released → device unlocked';
+    setTimeout(fpReset,3000);
+    return;
+  }
+  fpTimer=setTimeout(fpAnimate,30);
+}
+function fpEnd(){
+  if(fpDone) return;
+  fpHolding=false;
+  if(fpPct>0 && fpPct<100){
+    document.getElementById('fp-status').innerHTML='<span style="color:var(--amber2)">Lifted too early — try again</span>';
+    fpPaths.forEach(id=>{ const el=document.getElementById(id); if(el) el.setAttribute('stroke','#262d40'); });
+    document.getElementById('fp-scan-fill').style.width='0%';
+    document.getElementById('fp-ring').style.borderColor='var(--border2)';
+    document.getElementById('fp-ring').style.boxShadow='none';
+    fpPct=0;
+  }
+}
+function fpReset(){
+  fpHolding=false; fpDone=false; fpPct=0;
+  clearTimeout(fpTimer);
+  fpPaths.forEach(id=>{ const el=document.getElementById(id); if(el) el.setAttribute('stroke','#262d40'); });
+  document.getElementById('fp-scan-fill').style.width='0%';
+  document.getElementById('fp-ring').style.borderColor='var(--border2)';
+  document.getElementById('fp-ring').style.boxShadow='none';
+  document.getElementById('fp-status').innerHTML='';
+  document.getElementById('fp-steps').textContent='';
+  document.getElementById('fp-title').textContent='Touch & hold sensor';
+}
+
+// Live clock
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const el = document.getElementById('sim-time');
+  if(el) el.textContent = h+':'+m;
+}
+updateClock(); setInterval(updateClock, 30000);
+
+// PIN Simulator
+const CORRECT_PIN = '1234';
+let entered = '';
+let attempts = 0;
+let locked = false;
+let lockTimer = null;
+
+function updateDots(mode) {
+  for(let i=0;i<4;i++) {
+    const d = document.getElementById('d'+i);
+    d.classList.remove('filled','error');
+    if(mode==='error') { if(i<entered.length) d.classList.add('error'); }
+    else { if(i<entered.length) d.classList.add('filled'); }
+  }
+}
+function updateAttempts() {
+  for(let i=0;i<5;i++) {
+    const d = document.getElementById('a'+i);
+    d.classList.toggle('used', i<attempts);
+  }
+}
+function setStatus(msg, cls) {
+  const el = document.getElementById('pin-status');
+  el.textContent = msg; el.className = 'pin-status '+(cls||'');
+}
+function shake() {
+  const grid = document.getElementById('pin-grid');
+  grid.style.transform='translateX(-8px)';
+  setTimeout(()=>{grid.style.transform='translateX(8px)';},80);
+  setTimeout(()=>{grid.style.transform='translateX(-4px)';},160);
+  setTimeout(()=>{grid.style.transform='';},240);
+}
+function pressKey(k) {
+  if(locked||!k) return;
+  if(entered.length>=4) return;
+  entered += k;
+  updateDots();
+  if(entered.length===4) setTimeout(checkPin, 200);
+}
+function deleteKey() {
+  if(locked) return;
+  entered = entered.slice(0,-1);
+  updateDots();
+  setStatus('Enter PIN to unlock','');
+}
+function checkPin() {
+  if(entered===CORRECT_PIN) {
+    setStatus('✔ Unlocked!','ok');
+    updateDots('filled');
+    attempts = 0;
+    updateAttempts();
+    for(let i=0;i<4;i++) document.getElementById('d'+i).classList.add('filled');
+    setTimeout(()=>{
+      entered='';
+      updateDots();
+      setStatus('Enter PIN to unlock','');
+    }, 2000);
+  } else {
+    attempts++;
+    updateAttempts();
+    updateDots('error');
+    shake();
+    if(attempts>=5) {
+      locked=true;
+      let secs=30;
+      setStatus(`Locked — ${secs}s`,'err');
+      document.getElementById('pin-grid').style.opacity='0.4';
+      lockTimer = setInterval(()=>{
+        secs--;
+        if(secs<=0){
+          clearInterval(lockTimer);
+          locked=false; attempts=0;
+          updateAttempts();
+          setStatus('Enter PIN to unlock','');
+          document.getElementById('pin-grid').style.opacity='1';
+        } else {
+          setStatus(`Locked — ${secs}s`,'err');
+        }
+      },1000);
+    } else {
+      setStatus(`Wrong PIN — ${5-attempts} left`,'err');
+    }
+    setTimeout(()=>{ entered=''; updateDots(); },600);
+  }
+}
+</script>
+</body>
+</html>
